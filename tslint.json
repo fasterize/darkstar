@@ -1,0 +1,10 @@
+{
+  "extends": "tslint:latest",
+  "rules": {
+    "quotemark": "single",
+    "object-literal-sort-keys": false,
+    "no-reference": false,
+    "no-namespace": false,
+    "ordered-imports": false
+  }
+}

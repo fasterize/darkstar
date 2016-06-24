@@ -1,0 +1,15 @@
+{
+  "globalDependencies": {
+    "boom": "registry:dt/boom#0.0.0+20160317120654",
+    "hapi": "registry:dt/hapi#13.0.0+20160602125023",
+    "joi": "registry:dt/joi#9.0.0+20160602140522",
+    "nconf": "registry:dt/nconf#0.0.0+20160316155526",
+    "nock": "registry:dt/nock#0.54.0+20160613160405",
+    "node": "registry:dt/node#6.0.0+20160621231320",
+    "superagent": "registry:dt/superagent#1.4.0+20160317120654",
+    "supertest": "registry:dt/supertest#1.1.0+20160317120654"
+  },
+  "dependencies": {
+    "bluebird": "registry:npm/bluebird#3.3.4+20160622205516"
+  }
+}

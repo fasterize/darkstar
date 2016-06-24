@@ -1,0 +1,11 @@
+{
+  "exclude": [
+    "node_modules",
+    "typings"
+  ],
+  "compilerOptions": {
+    "noImplicitAny": true,
+    "moduleResolution": "node",
+    "target": "es5"
+  }
+}
