@@ -43,7 +43,7 @@ export default class KeyCDNController implements ICacheController {
 
   public get responsesSchema(): any {
     return {
-      '200': {
+      200: {
         description: 'KeyCDN cache flushed',
         schema: Joi.object({
           statusCode: Joi.number().valid(200),
@@ -53,7 +53,7 @@ export default class KeyCDNController implements ICacheController {
           }),
         }),
       },
-      '400': {
+      400: {
         description: 'Bad Request',
         schema: Joi.object({
           statusCode: Joi.number().valid(400),
@@ -64,7 +64,7 @@ export default class KeyCDNController implements ICacheController {
           }),
         }),
       },
-      '502': {
+      502: {
         description: 'Bad Gateway',
         schema: Joi.object({
           statusCode: Joi.number().valid(502),

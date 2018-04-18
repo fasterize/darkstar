@@ -4,15 +4,15 @@ import * as http from 'superagent';
 import * as Boom from 'boom';
 import CacheController from './CacheController';
 import ResponseBuilder from '../lib/ResponseBuilder';
-import * as fasterize from '../lib/fasterize';
+import * as fastly from '../lib/fastly';
 import IMap from '../lib/IMap';
 
-export default class FasterizeCacheController implements CacheController {
+export default class FastlyCacheController implements CacheController {
   public get flushZoneConfig(): Hapi.IRouteAdditionalConfigurationOptions {
     return {
       handler: this.flushZone.bind(this),
-      tags: ['api', 'cache', 'fasterize'],
-      description: 'Flush Fasterize cache',
+      tags: ['api', 'cache', 'fastly'],
+      description: 'Flush Fastly cache',
       validate: {
         params: this.paramsSchema,
         payload: this.payloadSchema,
@@ -26,24 +26,24 @@ export default class FasterizeCacheController implements CacheController {
 
   public flushZone(request: Hapi.Request, reply: Hapi.IReply) {
     // tslint:disable-next-line:no-string-literal
-    fasterize.flushConfig(request.params['zone_id'], request.payload['authorizationToken'])
+    fastly.flushService(request.params['zone_id'], request.payload['authorizationToken'])
       .then((response: http.Response) => {
         reply({ remoteStatusCode: 200, remoteResponse: response.body })
           .code(response.status);
       })
       .catch((error: any) => {
-        reply(ResponseBuilder.buildErrorResponse(error, 'fasterize'));
+        reply(ResponseBuilder.buildErrorResponse(error, 'fastly'));
       });
   }
 
   public get key() {
-    return 'fasterize';
+    return 'fastly';
   }
 
   public get responsesSchema(): any {
     return {
       200: {
-        description: 'Fasterize cache flushed',
+        description: 'Fastly cache flushed',
         schema: Joi.object({
           statusCode: Joi.number().valid(200),
           remoteResponse: Joi.object({ success: Joi.boolean().valid(true) }),
@@ -80,8 +80,8 @@ export default class FasterizeCacheController implements CacheController {
     return {
       zone_id: Joi.string()
         .required()
-        .example('42')
-        .description('Fasterize config ID to flush'),
+        .example('abcd')
+        .description('Fastly Service to flush'),
     };
   }
 
@@ -90,7 +90,7 @@ export default class FasterizeCacheController implements CacheController {
       authorizationToken: Joi.string()
         .required()
         .example('U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=')
-        .description('Fasterize API Key'),
+        .description('Fastly API Key'),
     });
   }
 }

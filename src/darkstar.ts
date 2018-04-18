@@ -46,7 +46,7 @@ if (!module.parent) {
   plugins.push({ register: require('hapi-api-version'), options: { validVersions: [1], defaultVersion: 1 } });
 }
 
-server.register(plugins, function (err) {
+server.register(plugins, err => {
   if (!module.parent) {
     server.start();
   }

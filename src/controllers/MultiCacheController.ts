@@ -7,6 +7,8 @@ import ResponseBuilder from '../lib/ResponseBuilder';
 import CacheController from './CacheController';
 import * as keycdn from '../lib/keycdn';
 import * as fasterize from '../lib/fasterize';
+import * as fastly from '../lib/fastly';
+
 import IMap from '../lib/IMap';
 
 export default class MultiCacheController {
@@ -24,15 +26,15 @@ export default class MultiCacheController {
       plugins: {
         'hapi-swagger': {
           responses: {
-            '200': {
+            200: {
               description: 'All caches have been flushed',
               schema: this.getSuccessResponseSchema(cacheControllers),
             },
-            '400': {
+            400: {
               description: 'Bad Request',
               schema: this.getBadRequestResponseSchema(cacheControllers),
             },
-            '502': {
+            502: {
               description: 'Bad Gateway',
               schema: this.getBadGatewayResponseSchema(cacheControllers),
             },
@@ -54,6 +56,12 @@ export default class MultiCacheController {
     if (request.payload['fasterize']) {
       actions['fasterize'] = fasterize.flushConfig(request.payload['fasterize']['zoneID'],
                                                    request.payload['fasterize']['authorizationToken'])
+        .reflect();
+    }
+
+    if (request.payload['fastly']) {
+      actions['fastly'] = fastly.flushService(request.payload['fastly']['zoneID'],
+                                                   request.payload['fastly']['authorizationToken'])
         .reflect();
     }
 
