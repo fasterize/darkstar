@@ -14,10 +14,12 @@ import { server } from '../../src/darkstar';
 describe('/v1/caches', () => {
   let keycdnAPIMock: nock.Scope;
   let fasterizeAPIMock: nock.Scope;
+  let fastlyAPIMock: nock.Scope;
 
   beforeEach( (done: Function) => {
     keycdnAPIMock = nock('https://api.keycdn.com');
     fasterizeAPIMock = nock('https://api.fasterize.com');
+    fastlyAPIMock = nock('https://api.fastly.com');
     done();
   });
 
@@ -26,6 +28,7 @@ describe('/v1/caches', () => {
       let flushRequest: request.Test;
       let keycdnFlushMock: nock.Scope;
       let fasterizeFlushMock: nock.Scope;
+      let fastlyFlushMock: nock.Scope;
 
       beforeEach( (done: Function) => {
         flushRequest = request(server.listener)
@@ -35,6 +38,8 @@ describe('/v1/caches', () => {
           .get('/zones/purge/1.json');
         fasterizeFlushMock = fasterizeAPIMock
           .delete('/v1/configs/42/cache');
+        fastlyFlushMock = fastlyAPIMock
+          .post('/service/abcd/purge_all');
         done();
       });
 
@@ -47,11 +52,15 @@ describe('/v1/caches', () => {
           .matchHeader('accept', 'application/json')
           .matchHeader('authorization', 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=')
           .reply(200, { success: true });
-
+        fastlyFlushMock
+          .matchHeader('accept', 'application/json')
+          .matchHeader('Fastly-Key', 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=')
+          .reply(200, { success: true });
         flushRequest
           .send({
             keycdn: { authorizationToken: 'sk_prod_XXX', zoneID: '1' },
             fasterize: { authorizationToken: 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=', zoneID: '42' },
+            fastly: {authorizationToken: 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=', zoneID: 'abcd'},
           })
           .expect('content-type', /application\/json/)
           .expect(200)
@@ -65,11 +74,16 @@ describe('/v1/caches', () => {
                 remoteStatusCode: 200,
                 remoteResponse: { success: true },
               },
+              fastly: {
+                remoteStatusCode: 200,
+                remoteResponse: { success: true },
+              },
             },
           })
           .end((error: any, response: request.Response) => {
             keycdnAPIMock.done();
             fasterizeAPIMock.done();
+            fastlyAPIMock.done();
             done(error);
           });
       });
@@ -104,7 +118,7 @@ describe('/v1/caches', () => {
       it('should reply "Bad request" when invalid payload is sent', (done: Function) => {
         keycdnFlushMock.times(0);
         fasterizeFlushMock.times(0);
-
+        fastlyFlushMock.times(0);
         flushRequest.send({})
           .expect('content-type', /application\/json/)
           .expect(400)
@@ -115,6 +129,7 @@ describe('/v1/caches', () => {
           .end((error: any, response: request.Response) => {
             keycdnAPIMock.done();
             fasterizeAPIMock.done();
+            fastlyAPIMock.done();
             done(error);
           });
       });
@@ -134,11 +149,15 @@ describe('/v1/caches', () => {
           .matchHeader('accept', 'application/json')
           .matchHeader('authorization', 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=')
           .reply(200, { success: true });
-
+        fastlyFlushMock
+          .matchHeader('accept', 'application/json')
+          .matchHeader('Fastly-Key', 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=')
+          .reply(200, { success: true });
         flushRequest
           .send({
             keycdn: { authorizationToken: 'sk_prod_XXX', zoneID: '1' },
             fasterize: { authorizationToken: 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=', zoneID: '42' },
+            fastly: {authorizationToken: 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=', zoneID: 'abcd'},
           })
           .expect('content-type', /application\/json/)
           .expect(400)
@@ -146,6 +165,10 @@ describe('/v1/caches', () => {
             message: 'A remote error occurred on one of the caches to flush',
             status: {
               fasterize: {
+                remoteStatusCode: 200,
+                remoteResponse: { success: true },
+              },
+              fastly: {
                 remoteStatusCode: 200,
                 remoteResponse: { success: true },
               },
@@ -159,6 +182,7 @@ describe('/v1/caches', () => {
           .end((error: any, response: request.Response) => {
             keycdnAPIMock.done();
             fasterizeAPIMock.done();
+            fastlyAPIMock.done();
             done(error);
           });
       });
@@ -178,11 +202,15 @@ describe('/v1/caches', () => {
           .matchHeader('accept', 'application/json')
           .matchHeader('authorization', 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=')
           .reply(200, { success: true });
-
+        fastlyFlushMock
+          .matchHeader('accept', 'application/json')
+          .matchHeader('Fastly-Key', 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=')
+          .reply(200, { success: true });
         flushRequest
           .send({
             keycdn: { authorizationToken: 'sk_prod_XXX', zoneID: '1' },
             fasterize: { authorizationToken: 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=', zoneID: '42' },
+            fastly: {authorizationToken: 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=', zoneID: 'abcd'},
           })
           .expect('content-type', /application\/json/)
           .expect(502)
@@ -190,6 +218,10 @@ describe('/v1/caches', () => {
             message: 'A remote error occurred on one of the caches to flush',
             status: {
               fasterize: {
+                remoteStatusCode: 200,
+                remoteResponse: { success: true },
+              },
+              fastly: {
                 remoteStatusCode: 200,
                 remoteResponse: { success: true },
               },
@@ -203,6 +235,7 @@ describe('/v1/caches', () => {
           .end((error: any, response: request.Response) => {
             keycdnAPIMock.done();
             fasterizeAPIMock.done();
+            fastlyAPIMock.done();
             done(error);
           });
       });
@@ -217,11 +250,15 @@ describe('/v1/caches', () => {
           .matchHeader('accept', 'application/json')
           .matchHeader('authorization', 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=')
           .reply(200, { success: true });
-
+        fastlyFlushMock
+          .matchHeader('accept', 'application/json')
+          .matchHeader('Fastly-Key', 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=')
+          .reply(200, { success: true });
         flushRequest
           .send({
             keycdn: { authorizationToken: 'sk_prod_XXX', zoneID: '1' },
             fasterize: { authorizationToken: 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=', zoneID: '42' },
+            fastly: {authorizationToken: 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=', zoneID: 'abcd'},
           })
           .expect('content-type', /application\/json/)
           .expect(502)
@@ -229,6 +266,10 @@ describe('/v1/caches', () => {
             message: 'A remote error occurred on one of the caches to flush',
             status: {
               fasterize: {
+                remoteStatusCode: 200,
+                remoteResponse: { success: true },
+              },
+              fastly: {
                 remoteStatusCode: 200,
                 remoteResponse: { success: true },
               },
@@ -240,6 +281,7 @@ describe('/v1/caches', () => {
           .end((error: any, response: request.Response) => {
             keycdnAPIMock.done();
             fasterizeAPIMock.done();
+            fastlyAPIMock.done();
             done(error);
           });
       });
@@ -258,11 +300,15 @@ describe('/v1/caches', () => {
           .matchHeader('accept', 'application/json')
           .matchHeader('authorization', 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=')
           .replyWithError('connection error');
-
+        fastlyFlushMock
+          .matchHeader('accept', 'application/json')
+          .matchHeader('Fastly-Key', 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=')
+          .replyWithError('connection error');
         flushRequest
           .send({
             keycdn: { authorizationToken: 'sk_prod_XXX', zoneID: '1' },
             fasterize: { authorizationToken: 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=', zoneID: '42' },
+            fastly: {authorizationToken: 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=', zoneID: 'abcd'},
           })
           .expect('content-type', /application\/json/)
           .expect(400)
@@ -271,6 +317,9 @@ describe('/v1/caches', () => {
             status: {
               fasterize: {
                 message: 'An error occurred while accessing fasterize API: connection error',
+              },
+              fastly: {
+                message: 'An error occurred while accessing fastly API: connection error',
               },
               keycdn: {
                 message: 'A remote error occurred',
@@ -282,6 +331,7 @@ describe('/v1/caches', () => {
           .end((error: any, response: request.Response) => {
             keycdnAPIMock.done();
             fasterizeAPIMock.done();
+            fastlyAPIMock.done();
             done(error);
           });
       });

@@ -1,6 +1,7 @@
 import * as Hapi from 'hapi';
 import CacheController from './controllers/CacheController';
 import FasterizeCacheController from './controllers/FasterizeCacheController';
+import FastlyCacheController from './controllers/FastlyCacheController';
 import KeyCDNController from './controllers/KeyCDNController';
 import MultiCacheController from './controllers/MultiCacheController';
 
@@ -16,6 +17,11 @@ export default function(server: Hapi.Server) {
   server.route({ method: 'DELETE', path: '/v1/caches/keycdn/zones/{zone_id}',
                  config: keyCDNController.flushZoneConfig });
   cacheControllers.push(keyCDNController);
+
+  const fastlyCacheController = new FastlyCacheController();
+  server.route({ method: 'DELETE', path: '/v1/caches/fastly/zones/{zone_id}',
+                 config: fastlyCacheController.flushZoneConfig });
+  cacheControllers.push(fastlyCacheController);
 
   const multiCacheController = new MultiCacheController();
   server.route({ method: 'DELETE', path: '/v1/caches/zones',
