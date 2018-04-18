@@ -7,6 +7,8 @@ import ResponseBuilder from '../lib/ResponseBuilder';
 import CacheController from './CacheController';
 import * as keycdn from '../lib/keycdn';
 import * as fasterize from '../lib/fasterize';
+import * as fastly from '../lib/fastly';
+
 import IMap from '../lib/IMap';
 
 export default class MultiCacheController {
@@ -54,6 +56,12 @@ export default class MultiCacheController {
     if (request.payload['fasterize']) {
       actions['fasterize'] = fasterize.flushConfig(request.payload['fasterize']['zoneID'],
                                                    request.payload['fasterize']['authorizationToken'])
+        .reflect();
+    }
+
+    if (request.payload['fastly']) {
+      actions['fastly'] = fastly.flushService(request.payload['fastly']['zoneID'],
+                                                   request.payload['fastly']['authorizationToken'])
         .reflect();
     }
 
