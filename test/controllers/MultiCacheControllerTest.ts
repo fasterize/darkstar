@@ -55,7 +55,7 @@ describe('/v1/caches', () => {
         fastlyFlushMock
           .matchHeader('accept', 'application/json')
           .matchHeader('Fastly-Key', 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=')
-          .reply(200, { success: true });
+          .reply(200, { status: 'ok' });
         flushRequest
           .send({
             keycdn: { authorizationToken: 'sk_prod_XXX', zoneID: '1' },
@@ -76,7 +76,7 @@ describe('/v1/caches', () => {
               },
               fastly: {
                 remoteStatusCode: 200,
-                remoteResponse: { success: true },
+                remoteResponse: { status: 'ok' },
               },
             },
           })
@@ -152,7 +152,7 @@ describe('/v1/caches', () => {
         fastlyFlushMock
           .matchHeader('accept', 'application/json')
           .matchHeader('Fastly-Key', 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=')
-          .reply(200, { success: true });
+          .reply(200, { status: 'ok' });
         flushRequest
           .send({
             keycdn: { authorizationToken: 'sk_prod_XXX', zoneID: '1' },
@@ -170,7 +170,7 @@ describe('/v1/caches', () => {
               },
               fastly: {
                 remoteStatusCode: 200,
-                remoteResponse: { success: true },
+                remoteResponse: { status: 'ok' },
               },
               keycdn: {
                 message: 'A remote error occurred',
@@ -205,7 +205,7 @@ describe('/v1/caches', () => {
         fastlyFlushMock
           .matchHeader('accept', 'application/json')
           .matchHeader('Fastly-Key', 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=')
-          .reply(200, { success: true });
+          .reply(200, { status: 'ok' });
         flushRequest
           .send({
             keycdn: { authorizationToken: 'sk_prod_XXX', zoneID: '1' },
@@ -223,7 +223,7 @@ describe('/v1/caches', () => {
               },
               fastly: {
                 remoteStatusCode: 200,
-                remoteResponse: { success: true },
+                remoteResponse: { status: 'ok' },
               },
               keycdn: {
                 message: 'A remote error occurred',
@@ -253,7 +253,7 @@ describe('/v1/caches', () => {
         fastlyFlushMock
           .matchHeader('accept', 'application/json')
           .matchHeader('Fastly-Key', 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=')
-          .reply(200, { success: true });
+          .reply(200, { status: 'ok' });
         flushRequest
           .send({
             keycdn: { authorizationToken: 'sk_prod_XXX', zoneID: '1' },
@@ -271,7 +271,7 @@ describe('/v1/caches', () => {
               },
               fastly: {
                 remoteStatusCode: 200,
-                remoteResponse: { success: true },
+                remoteResponse: { status: 'ok' },
               },
               keycdn: {
                 message: 'An error occurred while accessing keycdn API: connection error',
