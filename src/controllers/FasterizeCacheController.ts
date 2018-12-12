@@ -2,6 +2,7 @@ import * as Hapi from 'hapi';
 import * as Joi from 'joi';
 import * as http from 'superagent';
 import * as Boom from 'boom';
+import * as Promise from 'bluebird';
 import CacheController from './CacheController';
 import ResponseBuilder from '../lib/ResponseBuilder';
 import * as fasterize from '../lib/fasterize';
@@ -30,6 +31,45 @@ export default class FasterizeCacheController implements CacheController {
       .then((response: http.Response) => {
         reply({ remoteStatusCode: 200, remoteResponse: response.body })
           .code(response.status);
+      })
+      .catch((error: any) => {
+        reply(ResponseBuilder.buildErrorResponse(error, 'fasterize'));
+      });
+  }
+
+  public get flushURLsConfig(): Hapi.IRouteAdditionalConfigurationOptions {
+    return {
+      handler: this.flushURLs.bind(this),
+      tags: ['api', 'cache', 'fasterize'],
+      description: 'Flush Fasterize cache URL',
+      validate: {
+        params: this.paramsSchema,
+        payload: this.payloadSchema.keys({
+          urls: Joi.array().items(Joi.string().uri({
+            scheme: [
+              'http',
+              'https',
+            ]
+          })).min(1).required()
+        }),
+        failAction: (request: Hapi.Request, reply: Hapi.IReply, source: string, error: Boom.BoomError) => {
+          reply(ResponseBuilder.cleanupError(error));
+        },
+      },
+      plugins: { 'hapi-swagger': { responses: this.responsesSchema } },
+    };
+  }
+
+  public flushURLs(request: Hapi.Request, reply: Hapi.IReply) {
+    // tslint:disable-next-line:no-string-literal
+    Promise.all(
+      request.payload['urls'].map((url: string) => {
+        return fasterize.flushURL(request.params['zone_id'], url, request.payload['authorizationToken']);
+      })
+    )
+      .then(() => {
+        reply({ remoteStatusCode: 200, remoteResponse: { success: true } })
+          .code(200);
       })
       .catch((error: any) => {
         reply(ResponseBuilder.buildErrorResponse(error, 'fasterize'));
@@ -85,8 +125,8 @@ export default class FasterizeCacheController implements CacheController {
     };
   }
 
-  public get payloadSchema(): Joi.Schema {
-    return Joi.object({
+  public get payloadSchema(): Joi.ObjectSchema {
+    return Joi.object().keys({
       authorizationToken: Joi.string()
         .required()
         .example('U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=')

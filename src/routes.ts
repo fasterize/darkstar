@@ -11,6 +11,8 @@ export default function(server: Hapi.Server) {
   const fasterizeCacheController = new FasterizeCacheController();
   server.route({ method: 'DELETE', path: '/v1/caches/fasterize/zones/{zone_id}',
                  config: fasterizeCacheController.flushZoneConfig });
+  server.route({ method: 'DELETE', path: '/v1/caches/fasterize/zones/{zone_id}/urls',
+                 config: fasterizeCacheController.flushURLsConfig });
   cacheControllers.push(fasterizeCacheController);
 
   const keyCDNController = new KeyCDNController();

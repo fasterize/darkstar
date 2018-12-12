@@ -12,3 +12,13 @@ export function flushConfig(configID: string, authorizationToken: string): Promi
 
   return Promise.promisify(request.end, { context: request })();
 }
+
+export function flushURL(configID: string, url: string, authorizationToken: string): Promise<http.Response> {
+  const request = http
+    .delete(`${BASE_URL}${BASE_PATH}/${configID}/cache`)
+    .send({ url: url })
+    .type('application/json')
+    .set('authorization', authorizationToken);
+
+  return Promise.promisify(request.end, { context: request })();
+}
