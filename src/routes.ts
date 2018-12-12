@@ -16,6 +16,8 @@ export default function(server: Hapi.Server) {
   const keyCDNController = new KeyCDNController();
   server.route({ method: 'DELETE', path: '/v1/caches/keycdn/zones/{zone_id}',
                  config: keyCDNController.flushZoneConfig });
+  server.route({ method: 'DELETE', path: '/v1/caches/keycdn/zones/{zone_id}/urls',
+                 config: keyCDNController.flushURLsConfig });
   cacheControllers.push(keyCDNController);
 
   const fastlyCacheController = new FastlyCacheController();

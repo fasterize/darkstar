@@ -17,7 +17,7 @@ export default class KeyCDNController implements ICacheController {
     return {
       handler: this.flushZone.bind(this),
       tags: ['api', 'cache', 'keycdn'],
-      description: 'Flush KeyCDN cache',
+      description: 'Flush KeyCDN cache zone',
       validate: {
         params: this.paramsSchema,
         payload: this.payloadSchema,
@@ -32,6 +32,41 @@ export default class KeyCDNController implements ICacheController {
   public flushZone(request: Hapi.Request, reply: Hapi.IReply) {
     // tslint:disable-next-line:no-string-literal
     keycdn.flushZone(request.params['zone_id'], request.payload['authorizationToken'])
+      .then((response: http.Response) => {
+        reply({ remoteStatusCode: 200, remoteResponse: response.body })
+          .code(response.status);
+      })
+      .catch((error: any) => {
+        reply(ResponseBuilder.buildErrorResponse(error, 'keycdn'));
+      });
+  }
+
+  public get flushURLsConfig(): Hapi.IRouteAdditionalConfigurationOptions {
+    return {
+      handler: this.flushURLs.bind(this),
+      tags: ['api', 'cache', 'keycdn'],
+      description: 'Flush KeyCDN cache URL',
+      validate: {
+        params: this.paramsSchema,
+        payload: this.payloadSchema.keys({
+          urls: Joi.array().items(Joi.string().uri({
+            scheme: [
+              'http',
+              'https',
+            ]
+          })).min(1).required()
+        }),
+        failAction: (request: Hapi.Request, reply: Hapi.IReply, source: string, error: Boom.BoomError) => {
+          reply(ResponseBuilder.cleanupError(error));
+        },
+      },
+      plugins: { 'hapi-swagger': { responses: this.responsesSchema } },
+    };
+  }
+
+  public flushURLs(request: Hapi.Request, reply: Hapi.IReply) {
+    // tslint:disable-next-line:no-string-literal
+    keycdn.flushURLs(request.params['zone_id'], request.payload['urls'], request.payload['authorizationToken'])
       .then((response: http.Response) => {
         reply({ remoteStatusCode: 200, remoteResponse: response.body })
           .code(response.status);
@@ -87,8 +122,8 @@ export default class KeyCDNController implements ICacheController {
     };
   }
 
-  public get payloadSchema(): Joi.Schema {
-    return Joi.object({
+  public get payloadSchema(): Joi.ObjectSchema {
+    return Joi.object().keys({
       authorizationToken: Joi.string()
         .required()
         .example('sk_prod_XXX')
