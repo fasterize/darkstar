@@ -3,9 +3,8 @@ import * as Promise from 'bluebird';
 
 const BASE_URL = 'https://api.fastly.com';
 
-export function flushZone(url: string, authorizationToken: string): Promise<http.Response> {
-  const request = http
-    .purge(url)
+export function flushURL(url: string, authorizationToken: string): Promise<http.Response> {
+  const request = http('PURGE', url)
     .accept('application/json')
     .set('Fastly-Key', authorizationToken);
 

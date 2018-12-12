@@ -25,6 +25,8 @@ export default function(server: Hapi.Server) {
   const fastlyCacheController = new FastlyCacheController();
   server.route({ method: 'DELETE', path: '/v1/caches/fastly/zones/{zone_id}',
                  config: fastlyCacheController.flushZoneConfig });
+  server.route({ method: 'DELETE', path: '/v1/caches/fastly/zones/{zone_id}/urls',
+                 config: fastlyCacheController.flushURLsConfig });
   cacheControllers.push(fastlyCacheController);
 
   const multiCacheController = new MultiCacheController();
