@@ -32,6 +32,8 @@ export default function(server: Hapi.Server) {
   const multiCacheController = new MultiCacheController();
   server.route({ method: 'DELETE', path: '/v1/caches/zones',
                  config: multiCacheController.getFlushZoneConfig(cacheControllers) });
+  server.route({ method: 'DELETE', path: '/v1/caches/urls',
+                 config: multiCacheController.getFlushURLsConfig(cacheControllers) });
 
   server.route({ method: 'GET', path: '/heartbeat',
                  handler: (request: Hapi.Request, reply: Hapi.IReply) => { reply('I am alive!').code(200); },

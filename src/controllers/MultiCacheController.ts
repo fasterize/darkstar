@@ -18,7 +18,7 @@ export default class MultiCacheController {
       tags: ['api', 'cache'],
       description: 'Flush multiple caches',
       validate: {
-        payload: this.getPayloadRequestSchema(cacheControllers),
+        payload: this.getPayloadRequestSchema(cacheControllers, 'flushZoneConfig'),
         failAction: (request: Hapi.Request, reply: Hapi.IReply, source: string, error: Boom.BoomError) => {
           reply(ResponseBuilder.cleanupError(error));
         },
@@ -65,6 +65,81 @@ export default class MultiCacheController {
         .reflect();
     }
 
+    this.execAll(actions, reply);
+  }
+
+  public getFlushURLsConfig(cacheControllers: CacheController[]): Hapi.IRouteAdditionalConfigurationOptions {
+    return {
+      handler: this.flushURLs.bind(this),
+      tags: ['api', 'cache'],
+      description: 'Flush multiple caches',
+      validate: {
+        payload: this.getPayloadRequestSchema(cacheControllers, 'flushURLsConfig'),
+        failAction: (request: Hapi.Request, reply: Hapi.IReply, source: string, error: Boom.BoomError) => {
+          reply(ResponseBuilder.cleanupError(error));
+        },
+      },
+      plugins: {
+        'hapi-swagger': {
+          responses: {
+            200: {
+              description: 'All caches have been flushed',
+              schema: this.getSuccessResponseSchema(cacheControllers),
+            },
+            400: {
+              description: 'Bad Request',
+              schema: this.getBadRequestResponseSchema(cacheControllers),
+            },
+            502: {
+              description: 'Bad Gateway',
+              schema: this.getBadGatewayResponseSchema(cacheControllers),
+            },
+          },
+        },
+      },
+    };
+  }
+
+  public flushURLs(request: Hapi.Request, reply: Hapi.IReply) {
+    const actions: IMap<any> = {};
+    // tslint:disable:no-string-literal
+    if (request.payload['keycdn']) {
+      actions['keycdn'] = keycdn.flushURLs(request.payload['keycdn']['zoneID'],
+                                           request.payload['keycdn']['urls'],
+                                           request.payload['keycdn']['authorizationToken'])
+        .reflect();
+    }
+
+    if (request.payload['fasterize']) {
+      actions['fasterize'] = Promise.all(
+        request.payload['fasterize']['urls'].map((url: string) => {
+          return fasterize.flushURL(request.payload['fasterize']['zoneID'],
+                                    url,
+                                    request.payload['fasterize']['authorizationToken']);
+        })
+      )
+        .then((responses: any[]) => {
+          return responses[0];
+        })
+        .reflect();
+    }
+
+    if (request.payload['fastly']) {
+      actions['fastly'] = Promise.all(
+        request.payload['fastly']['urls'].map((url: string) => {
+          return fastly.flushURL(url, request.payload['fastly']['authorizationToken']);
+        })
+      )
+        .then((responses: any[]) => {
+          return responses[0];
+        })
+        .reflect();
+    }
+
+    this.execAll(actions, reply);
+  }
+
+  private execAll(actions: IMap<any>, reply: Hapi.IReply) {
     const flushResponses: Promise<Object> = Promise.props(actions);
 
     flushResponses.then((info: IMap<Promise.Inspection<http.Response>>) => {
@@ -98,11 +173,11 @@ export default class MultiCacheController {
     });
   }
 
-  private getPayloadRequestSchema(cacheControllers: CacheController[]) {
+  private getPayloadRequestSchema(cacheControllers: CacheController[], configMethodName: string) {
     const schema: any = {};
 
     for (let cacheController of cacheControllers) {
-      const config: Hapi.IRouteAdditionalConfigurationOptions = cacheController.flushZoneConfig;
+      const config: Hapi.IRouteAdditionalConfigurationOptions = (<any>cacheController)[configMethodName] as Hapi.IRouteAdditionalConfigurationOptions;
       const paramsSchema: any = config.validate.params;
       const payloadSchema: any = config.validate.payload;
 
