@@ -47,7 +47,7 @@ describe('/v1/caches/fasterize', () => {
             remoteResponse: { success: true },
           })
           .end((error: any, response: request.Response) => {
-            if (error) done(error);
+            if (error) { done(error); };
             fasterizeAPIMock.done();
             done(error);
           });
@@ -64,7 +64,7 @@ describe('/v1/caches/fasterize', () => {
             validation: { source: 'payload', keys: [ 'authorizationToken' ] },
           })
           .end((error: any, response: request.Response) => {
-            if (error) done(error);
+            if (error) { done(error); };
             fasterizeAPIMock.done();
             done(error);
           });
@@ -91,7 +91,7 @@ describe('/v1/caches/fasterize', () => {
             remoteResponse: fasterizeError,
           })
           .end((error: any, response: request.Response) => {
-            if (error) done(error);
+            if (error) { done(error); };
             fasterizeAPIMock.done();
             done(error);
           });
@@ -118,7 +118,7 @@ describe('/v1/caches/fasterize', () => {
             remoteResponse: fasterizeError,
           })
           .end((error: any, response: request.Response) => {
-            if (error) done(error);
+            if (error) { done(error); };
             fasterizeAPIMock.done();
             done(error);
           });
@@ -137,7 +137,7 @@ describe('/v1/caches/fasterize', () => {
             message: 'An error occurred while accessing fasterize API: connection error',
           })
           .end((error: any, response: request.Response) => {
-            if (error) done(error);
+            if (error) { done(error); };
             fasterizeAPIMock.done();
             done(error);
           });
@@ -163,7 +163,8 @@ describe('/v1/caches/fasterize', () => {
           .matchHeader('authorization', 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=')
           .reply(200, { success: true });
 
-        flushRequest.send({ authorizationToken: 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=', urls: ['http://test-domain.com/image1.png'] })
+        flushRequest.send({ authorizationToken: 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=',
+                            urls: ['http://test-domain.com/image1.png'] })
           .expect('content-type', /application\/json/)
           .expect(200)
           .expect({
@@ -171,7 +172,7 @@ describe('/v1/caches/fasterize', () => {
             remoteResponse: { success: true },
           })
           .end((error: any, response: request.Response) => {
-            if (error) done(error);
+            if (error) { done(error); };
             fasterizeAPIMock.done();
             done(error);
           });
@@ -197,7 +198,7 @@ describe('/v1/caches/fasterize', () => {
             remoteResponse: { success: true },
           })
           .end((error: any, response: request.Response) => {
-            if (error) done(error);
+            if (error) { done(error); };
             fasterizeAPIMock.done();
             done(error);
           });
@@ -216,7 +217,7 @@ describe('/v1/caches/fasterize', () => {
             validation: { source: 'payload', keys: [ 'urls' ] },
           })
           .end((error: any, response: request.Response) => {
-            if (error) done(error);
+            if (error) { done(error); };
             fasterizeAPIMock.done();
             done(error);
           });
@@ -235,7 +236,7 @@ describe('/v1/caches/fasterize', () => {
             validation: { source: 'payload', keys: [ 'urls' ] },
           })
           .end((error: any, response: request.Response) => {
-            if (error) done(error);
+            if (error) { done(error); };
             fasterizeAPIMock.done();
             done(error);
           });
@@ -254,7 +255,8 @@ describe('/v1/caches/fasterize', () => {
           .matchHeader('authorization', 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=')
           .reply(401, fasterizeError);
 
-        flushRequest.send({ authorizationToken: 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=', urls: ['http://test-domain.com/image1.png'] })
+        flushRequest.send({ authorizationToken: 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=',
+                            urls: ['http://test-domain.com/image1.png'] })
           .expect('content-type', /application\/json/)
           .expect(400)
           .expect({
@@ -263,7 +265,7 @@ describe('/v1/caches/fasterize', () => {
             remoteResponse: fasterizeError,
           })
           .end((error: any, response: request.Response) => {
-            if (error) done(error);
+            if (error) { done(error); };
             fasterizeAPIMock.done();
             done(error);
           });
@@ -282,7 +284,8 @@ describe('/v1/caches/fasterize', () => {
           .matchHeader('authorization', 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=')
           .reply(500, fasterizeError);
 
-        flushRequest.send({ authorizationToken: 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=', urls: ['http://test-domain.com/image1.png'] })
+        flushRequest.send({ authorizationToken: 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=',
+                            urls: ['http://test-domain.com/image1.png'] })
           .expect('content-type', /application\/json/)
           .expect(502)
           .expect({
@@ -291,7 +294,7 @@ describe('/v1/caches/fasterize', () => {
             remoteResponse: fasterizeError,
           })
           .end((error: any, response: request.Response) => {
-            if (error) done(error);
+            if (error) { done(error); };
             fasterizeAPIMock.done();
             done(error);
           });
@@ -304,14 +307,15 @@ describe('/v1/caches/fasterize', () => {
           .matchHeader('authorization', 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=')
           .replyWithError('connection error');
 
-        flushRequest.send({ authorizationToken: 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=', urls: ['http://test-domain.com/image1.png'] })
+        flushRequest.send({ authorizationToken: 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=',
+                            urls: ['http://test-domain.com/image1.png'] })
           .expect('content-type', /application\/json/)
           .expect(502)
           .expect({
             message: 'An error occurred while accessing fasterize API: connection error',
           })
           .end((error: any, response: request.Response) => {
-            if (error) done(error);
+            if (error) { done(error); };
             fasterizeAPIMock.done();
             done(error);
           });

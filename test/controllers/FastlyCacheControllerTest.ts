@@ -47,7 +47,7 @@ describe('/v1/caches/fastly', () => {
             remoteResponse: { status: 'ok' },
           })
           .end((error: any, response: request.Response) => {
-            if (error) done(error);
+            if (error) { done(error); };
             fastlyAPIMock.done();
             done(error);
           });
@@ -64,7 +64,7 @@ describe('/v1/caches/fastly', () => {
             validation: { source: 'payload', keys: [ 'authorizationToken' ] },
           })
           .end((error: any, response: request.Response) => {
-            if (error) done(error);
+            if (error) { done(error); };
             fastlyAPIMock.done();
             done(error);
           });
@@ -91,7 +91,7 @@ describe('/v1/caches/fastly', () => {
             remoteResponse: fastlyError,
           })
           .end((error: any, response: request.Response) => {
-            if (error) done(error);
+            if (error) { done(error); };
             fastlyAPIMock.done();
             done(error);
           });
@@ -118,7 +118,7 @@ describe('/v1/caches/fastly', () => {
             remoteResponse: fastlyError,
           })
           .end((error: any, response: request.Response) => {
-            if (error) done(error);
+            if (error) { done(error); };
             fastlyAPIMock.done();
             done(error);
           });
@@ -137,7 +137,7 @@ describe('/v1/caches/fastly', () => {
             message: 'An error occurred while accessing fastly API: connection error',
           })
           .end((error: any, response: request.Response) => {
-            if (error) done(error);
+            if (error) { done(error); };
             fastlyAPIMock.done();
             done(error);
           });
@@ -165,7 +165,8 @@ describe('/v1/caches/fastly', () => {
           .matchHeader('Fastly-Key', 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=')
           .reply(200, { status: 'ok' });
 
-        flushRequest.send({ authorizationToken: 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=', urls: ['https://test-domain.com/image.png'] })
+        flushRequest.send({ authorizationToken: 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=',
+                            urls: ['https://test-domain.com/image.png'] })
           .expect('content-type', /application\/json/)
           .expect(200)
           .expect({
@@ -173,7 +174,7 @@ describe('/v1/caches/fastly', () => {
             remoteResponse: { status: 'ok' },
           })
           .end((error: any, response: request.Response) => {
-            if (error) done(error);
+            if (error) { done(error); };
             flushMock.done();
             done(error);
           });
@@ -197,7 +198,7 @@ describe('/v1/caches/fastly', () => {
             remoteResponse: { status: 'ok' },
           })
           .end((error: any, response: request.Response) => {
-            if (error) done(error);
+            if (error) { done(error); };
             flushMock.done();
             done(error);
           });
@@ -216,7 +217,7 @@ describe('/v1/caches/fastly', () => {
             validation: { source: 'payload', keys: [ 'urls' ] },
           })
           .end((error: any, response: request.Response) => {
-            if (error) done(error);
+            if (error) { done(error); };
             flushMock.done();
             done(error);
           });
@@ -235,7 +236,8 @@ describe('/v1/caches/fastly', () => {
           .matchHeader('Fastly-Key', 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=')
           .reply(401, fastlyError);
 
-        flushRequest.send({ authorizationToken: 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=', urls: ['https://test-domain.com/image.png'] })
+        flushRequest.send({ authorizationToken: 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=',
+                            urls: ['https://test-domain.com/image.png'] })
           .expect('content-type', /application\/json/)
           .expect(400)
           .expect({
@@ -244,7 +246,7 @@ describe('/v1/caches/fastly', () => {
             remoteResponse: fastlyError,
           })
           .end((error: any, response: request.Response) => {
-            if (error) done(error);
+            if (error) { done(error); };
             flushMock.done();
             done(error);
           });
@@ -263,7 +265,8 @@ describe('/v1/caches/fastly', () => {
           .matchHeader('Fastly-key', 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=')
           .reply(500, fastlyError);
 
-        flushRequest.send({ authorizationToken: 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=', urls: ['https://test-domain.com/image.png'] })
+        flushRequest.send({ authorizationToken: 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=',
+                            urls: ['https://test-domain.com/image.png'] })
           .expect('content-type', /application\/json/)
           .expect(502)
           .expect({
@@ -272,7 +275,7 @@ describe('/v1/caches/fastly', () => {
             remoteResponse: fastlyError,
           })
           .end((error: any, response: request.Response) => {
-            if (error) done(error);
+            if (error) { done(error); };
             flushMock.done();
             done(error);
           });
@@ -285,14 +288,15 @@ describe('/v1/caches/fastly', () => {
           .matchHeader('Fastly-key', 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=')
           .replyWithError('connection error');
 
-        flushRequest.send({ authorizationToken: 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=', urls: ['https://test-domain.com/image.png'] })
+        flushRequest.send({ authorizationToken: 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=',
+                            urls: ['https://test-domain.com/image.png'] })
           .expect('content-type', /application\/json/)
           .expect(502)
           .expect({
             message: 'An error occurred while accessing fastly API: connection error',
           })
           .end((error: any, response: request.Response) => {
-            if (error) done(error);
+            if (error) { done(error); };
             flushMock.done();
             done(error);
           });

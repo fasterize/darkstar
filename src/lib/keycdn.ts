@@ -15,7 +15,7 @@ export function flushZone(zoneID: string, authorizationToken: string): Promise<h
 export function flushURLs(zoneID: string, urls: string[], authorizationToken: string): Promise<http.Response> {
   const request = http
     .delete(`${BASE_URL}/zones/purgeurl/${zoneID}.json`)
-    .send({ urls: urls })
+    .send({ urls })
     .type('application/json')
     .auth(authorizationToken, '');
 

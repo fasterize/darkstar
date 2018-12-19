@@ -82,7 +82,7 @@ describe('/v1/caches', () => {
             },
           })
           .end((error: any, response: request.Response) => {
-            if (error) done(error);
+            if (error) { done(error); };
             keycdnAPIMock.done();
             fasterizeAPIMock.done();
             fastlyAPIMock.done();
@@ -111,7 +111,7 @@ describe('/v1/caches', () => {
             },
           })
           .end((error: any, response: request.Response) => {
-            if (error) done(error);
+            if (error) { done(error); };
             keycdnAPIMock.done();
             fasterizeAPIMock.done();
             done(error);
@@ -130,7 +130,7 @@ describe('/v1/caches', () => {
             validation: { source: 'payload', keys: [ 'value' ] },
           })
           .end((error: any, response: request.Response) => {
-            if (error) done(error);
+            if (error) { done(error); };
             keycdnAPIMock.done();
             fasterizeAPIMock.done();
             fastlyAPIMock.done();
@@ -184,7 +184,7 @@ describe('/v1/caches', () => {
             },
           })
           .end((error: any, response: request.Response) => {
-            if (error) done(error);
+            if (error) { done(error); };
             keycdnAPIMock.done();
             fasterizeAPIMock.done();
             fastlyAPIMock.done();
@@ -238,7 +238,7 @@ describe('/v1/caches', () => {
             },
           })
           .end((error: any, response: request.Response) => {
-            if (error) done(error);
+            if (error) { done(error); };
             keycdnAPIMock.done();
             fasterizeAPIMock.done();
             fastlyAPIMock.done();
@@ -285,7 +285,7 @@ describe('/v1/caches', () => {
             },
           })
           .end((error: any, response: request.Response) => {
-            if (error) done(error);
+            if (error) { done(error); };
             keycdnAPIMock.done();
             fasterizeAPIMock.done();
             fastlyAPIMock.done();
@@ -336,7 +336,7 @@ describe('/v1/caches', () => {
             },
           })
           .end((error: any, response: request.Response) => {
-            if (error) done(error);
+            if (error) { done(error); };
             keycdnAPIMock.done();
             fasterizeAPIMock.done();
             fastlyAPIMock.done();
@@ -361,7 +361,9 @@ describe('/v1/caches', () => {
 
       it('should flush an URL for multiple caches', (done: Function) => {
         keycdnAPIMock
-          .delete('/zones/purgeurl/1.json', { urls: ['https://test-domain.com/image1.png', 'https://test-domain.com/image2.png' ]})
+          .delete('/zones/purgeurl/1.json', {
+            urls: ['https://test-domain.com/image1.png', 'https://test-domain.com/image2.png'],
+          })
           .matchHeader('content-type', 'application/json')
           .matchHeader('authorization', `Basic ${new Buffer('sk_prod_XXX:').toString('base64')}`)
           .reply(200, { status: 'success', description: 'Cache has been cleared for URL(s).' });
@@ -386,7 +388,8 @@ describe('/v1/caches', () => {
 
         flushRequest
           .send({
-            keycdn: { authorizationToken: 'sk_prod_XXX', zoneID: '1', urls: ['https://test-domain.com/image1.png', 'https://test-domain.com/image2.png'] },
+            keycdn: { authorizationToken: 'sk_prod_XXX', zoneID: '1',
+                      urls: ['https://test-domain.com/image1.png', 'https://test-domain.com/image2.png'] },
             fasterize: { authorizationToken: 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=', zoneID: '42',
                          urls: ['https://test-domain.com/image1.png', 'https://test-domain.com/image2.png'] },
             fastly: { authorizationToken: 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=', zoneID: 'abcd',
@@ -411,7 +414,7 @@ describe('/v1/caches', () => {
             },
           })
           .end((error: any, response: request.Response) => {
-            if (error) done(error);
+            if (error) { done(error); };
             keycdnAPIMock.done();
             fasterizeAPIMock.done();
             flushMock.done();
@@ -428,7 +431,8 @@ describe('/v1/caches', () => {
 
         flushRequest
           .send({
-            fasterize: { authorizationToken: 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=', zoneID: '42', urls: ['https://test-domain.com/image1.png'] },
+            fasterize: { authorizationToken: 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=', zoneID: '42',
+                         urls: ['https://test-domain.com/image1.png'] },
           })
           .expect('content-type', /application\/json/)
           .expect(200)
@@ -441,7 +445,7 @@ describe('/v1/caches', () => {
             },
           })
           .end((error: any, response: request.Response) => {
-            if (error) done(error);
+            if (error) { done(error); };
             keycdnAPIMock.done();
             fasterizeAPIMock.done();
             done(error);
@@ -464,7 +468,7 @@ describe('/v1/caches', () => {
             validation: { source: 'payload', keys: [ 'value' ] },
           })
           .end((error: any, response: request.Response) => {
-            if (error) done(error);
+            if (error) { done(error); };
             keycdnAPIMock.done();
             fasterizeAPIMock.done();
             flushMock.done();
@@ -480,7 +484,9 @@ describe('/v1/caches', () => {
         };
 
         keycdnAPIMock
-          .delete('/zones/purgeurl/1.json', { urls: ['https://test-domain.com/image1.png', 'https://test-domain.com/image2.png']})
+          .delete('/zones/purgeurl/1.json', {
+            urls: ['https://test-domain.com/image1.png', 'https://test-domain.com/image2.png'],
+          })
           .matchHeader('content-type', 'application/json')
           .matchHeader('authorization', `Basic ${new Buffer('sk_prod_XXX:').toString('base64')}`)
           .reply(401, keycdnError);
@@ -501,8 +507,10 @@ describe('/v1/caches', () => {
 
         flushRequest
           .send({
-            keycdn: { authorizationToken: 'sk_prod_XXX', zoneID: '1', urls: ['https://test-domain.com/image1.png', 'https://test-domain.com/image2.png'] },
-            fasterize: { authorizationToken: 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=', zoneID: '42', urls: ['https://test-domain.com/image1.png'] },
+            keycdn: { authorizationToken: 'sk_prod_XXX', zoneID: '1',
+                      urls: ['https://test-domain.com/image1.png', 'https://test-domain.com/image2.png'] },
+            fasterize: { authorizationToken: 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=', zoneID: '42',
+                         urls: ['https://test-domain.com/image1.png'] },
             fastly: { authorizationToken: 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=', zoneID: 'abcd',
                       urls: ['https://test-domain.com/image1.png', 'https://test-domain.com/image2.png']},
           })
@@ -527,7 +535,7 @@ describe('/v1/caches', () => {
             },
           })
           .end((error: any, response: request.Response) => {
-            if (error) done(error);
+            if (error) { done(error); };
             keycdnAPIMock.done();
             fasterizeAPIMock.done();
             flushMock.done();
@@ -543,7 +551,9 @@ describe('/v1/caches', () => {
         };
 
         keycdnAPIMock
-          .delete('/zones/purgeurl/1.json', { urls: ['https://test-domain.com/image1.png', 'https://test-domain.com/image2.png']})
+          .delete('/zones/purgeurl/1.json', {
+            urls: ['https://test-domain.com/image1.png', 'https://test-domain.com/image2.png'],
+          })
           .matchHeader('content-type', 'application/json')
           .matchHeader('authorization', `Basic ${new Buffer('sk_prod_XXX:').toString('base64')}`)
           .reply(500, keycdnError);
@@ -564,8 +574,10 @@ describe('/v1/caches', () => {
 
         flushRequest
           .send({
-            keycdn: { authorizationToken: 'sk_prod_XXX', zoneID: '1', urls: ['https://test-domain.com/image1.png', 'https://test-domain.com/image2.png'] },
-            fasterize: { authorizationToken: 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=', zoneID: '42', urls: ['https://test-domain.com/image1.png'] },
+            keycdn: { authorizationToken: 'sk_prod_XXX', zoneID: '1',
+                      urls: ['https://test-domain.com/image1.png', 'https://test-domain.com/image2.png'] },
+            fasterize: { authorizationToken: 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=', zoneID: '42',
+                         urls: ['https://test-domain.com/image1.png'] },
             fastly: { authorizationToken: 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=', zoneID: 'abcd',
                       urls: ['https://test-domain.com/image1.png', 'https://test-domain.com/image2.png']},
           })
@@ -590,7 +602,7 @@ describe('/v1/caches', () => {
             },
           })
           .end((error: any, response: request.Response) => {
-            if (error) done(error);
+            if (error) { done(error); };
             keycdnAPIMock.done();
             fasterizeAPIMock.done();
             flushMock.done();
@@ -598,32 +610,35 @@ describe('/v1/caches', () => {
           });
       });
 
-      it('should reply bad gateway when an error occurred while accessing one of the cache servers',
-         (done: Function) => {
-           keycdnAPIMock
-             .delete('/zones/purgeurl/1.json', { urls: ['https://test-domain.com/image1.png', 'https://test-domain.com/image2.png'] })
-             .matchHeader('content-type', 'application/json')
-             .matchHeader('authorization', `Basic ${new Buffer('sk_prod_XXX:').toString('base64')}`)
-             .replyWithError('connection error');
-           fasterizeAPIMock
-             .delete('/v1/configs/42/cache', { url: 'https://test-domain.com/image1.png' })
-             .matchHeader('content-type', 'application/json')
-             .matchHeader('authorization', 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=')
-             .reply(200, { success: true });
-           flushMock
-             .intercept('/image1.png', 'PURGE')
-             .matchHeader('accept', 'application/json')
-             .matchHeader('Fastly-Key', 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=')
-             .reply(200, { status: 'ok' })
-             .intercept('/image2.png', 'PURGE')
-             .matchHeader('accept', 'application/json')
-             .matchHeader('Fastly-Key', 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=')
-             .reply(200, { status: 'ok' });
+      it('should reply bad gateway when an error occurred while accessing 1 of the cache servers', (done: Function) => {
+        keycdnAPIMock
+          .delete('/zones/purgeurl/1.json', {
+            urls: ['https://test-domain.com/image1.png', 'https://test-domain.com/image2.png'],
+          })
+          .matchHeader('content-type', 'application/json')
+          .matchHeader('authorization', `Basic ${new Buffer('sk_prod_XXX:').toString('base64')}`)
+          .replyWithError('connection error');
+        fasterizeAPIMock
+          .delete('/v1/configs/42/cache', { url: 'https://test-domain.com/image1.png' })
+          .matchHeader('content-type', 'application/json')
+          .matchHeader('authorization', 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=')
+          .reply(200, { success: true });
+        flushMock
+          .intercept('/image1.png', 'PURGE')
+          .matchHeader('accept', 'application/json')
+          .matchHeader('Fastly-Key', 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=')
+          .reply(200, { status: 'ok' })
+          .intercept('/image2.png', 'PURGE')
+          .matchHeader('accept', 'application/json')
+          .matchHeader('Fastly-Key', 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=')
+          .reply(200, { status: 'ok' });
 
         flushRequest
           .send({
-            keycdn: { authorizationToken: 'sk_prod_XXX', zoneID: '1', urls: ['https://test-domain.com/image1.png', 'https://test-domain.com/image2.png'] },
-            fasterize: { authorizationToken: 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=', zoneID: '42', urls: ['https://test-domain.com/image1.png'] },
+            keycdn: { authorizationToken: 'sk_prod_XXX', zoneID: '1',
+                      urls: ['https://test-domain.com/image1.png', 'https://test-domain.com/image2.png'] },
+            fasterize: { authorizationToken: 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=', zoneID: '42',
+                         urls: ['https://test-domain.com/image1.png'] },
             fastly: { authorizationToken: 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=', zoneID: 'abcd',
                       urls: ['https://test-domain.com/image1.png', 'https://test-domain.com/image2.png'] },
           })
@@ -646,7 +661,7 @@ describe('/v1/caches', () => {
             },
           })
           .end((error: any, response: request.Response) => {
-            if (error) done(error);
+            if (error) { done(error); };
             keycdnAPIMock.done();
             fasterizeAPIMock.done();
             flushMock.done();
@@ -661,7 +676,9 @@ describe('/v1/caches', () => {
         };
 
         keycdnAPIMock
-          .delete('/zones/purgeurl/1.json', { urls: ['https://test-domain.com/image1.png', 'https://test-domain.com/image2.png'] })
+          .delete('/zones/purgeurl/1.json', {
+            urls: ['https://test-domain.com/image1.png', 'https://test-domain.com/image2.png'],
+          })
           .matchHeader('content-type', 'application/json')
           .matchHeader('authorization', `Basic ${new Buffer('sk_prod_XXX:').toString('base64')}`)
           .reply(401, keycdnError);
@@ -682,8 +699,10 @@ describe('/v1/caches', () => {
 
         flushRequest
           .send({
-            keycdn: { authorizationToken: 'sk_prod_XXX', zoneID: '1', urls: ['https://test-domain.com/image1.png', 'https://test-domain.com/image2.png'] },
-            fasterize: { authorizationToken: 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=', zoneID: '42', urls: ['https://test-domain.com/image1.png'] },
+            keycdn: { authorizationToken: 'sk_prod_XXX', zoneID: '1',
+                      urls: ['https://test-domain.com/image1.png', 'https://test-domain.com/image2.png'] },
+            fasterize: { authorizationToken: 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=', zoneID: '42',
+                         urls: ['https://test-domain.com/image1.png'] },
             fastly: { authorizationToken: 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=', zoneID: 'abcd',
                       urls: ['https://test-domain.com/image1.png', 'https://test-domain.com/image2.png'] },
           })
@@ -706,7 +725,7 @@ describe('/v1/caches', () => {
             },
           })
           .end((error: any, response: request.Response) => {
-            if (error) done(error);
+            if (error) { done(error); };
             keycdnAPIMock.done();
             fasterizeAPIMock.done();
             flushMock.done();

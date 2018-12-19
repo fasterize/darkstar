@@ -49,8 +49,8 @@ export default class FastlyCacheController implements CacheController {
             scheme: [
               'http',
               'https',
-            ]
-          })).min(1).required()
+            ],
+          })).min(1).required(),
         }),
         failAction: (request: Hapi.Request, reply: Hapi.IReply, source: string, error: Boom.BoomError) => {
           reply(ResponseBuilder.cleanupError(error));
@@ -61,9 +61,10 @@ export default class FastlyCacheController implements CacheController {
   }
 
   public flushURLs(request: Hapi.Request, reply: Hapi.IReply) {
-    // tslint:disable-next-line:no-string-literal
     Promise.all(
+      // tslint:disable-next-line:no-string-literal
       request.payload['urls'].map((url: string) => {
+        // tslint:disable-next-line:no-string-literal
         return fastly.flushURL(url, request.payload['authorizationToken']);
       })
     )

@@ -177,7 +177,8 @@ export default class MultiCacheController {
     const schema: any = {};
 
     for (let cacheController of cacheControllers) {
-      const config: Hapi.IRouteAdditionalConfigurationOptions = (<any>cacheController)[configMethodName] as Hapi.IRouteAdditionalConfigurationOptions;
+      const config: Hapi.IRouteAdditionalConfigurationOptions =
+        (<any> cacheController)[configMethodName] as Hapi.IRouteAdditionalConfigurationOptions;
       const paramsSchema: any = config.validate.params;
       const payloadSchema: any = config.validate.payload;
 

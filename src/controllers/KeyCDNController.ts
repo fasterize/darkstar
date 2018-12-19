@@ -53,8 +53,8 @@ export default class KeyCDNController implements ICacheController {
             scheme: [
               'http',
               'https',
-            ]
-          })).min(1).required()
+            ],
+          })).min(1).required(),
         }),
         failAction: (request: Hapi.Request, reply: Hapi.IReply, source: string, error: Boom.BoomError) => {
           reply(ResponseBuilder.cleanupError(error));
