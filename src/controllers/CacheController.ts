@@ -3,7 +3,7 @@ import * as Joi from 'joi';
 import IMap from '../lib/IMap';
 
 interface ICacheController {
-  flushZoneConfig: Hapi.IRouteAdditionalConfigurationOptions;
+  flushZoneConfig: Hapi.RouteOptions;
   key: string;
   responsesSchema: any;
   paramsSchema: IMap<Joi.Schema>;

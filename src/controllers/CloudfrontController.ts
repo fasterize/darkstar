@@ -2,17 +2,17 @@ import * as Hapi from 'hapi';
 import * as Joi from 'joi';
 import * as Boom from 'boom';
 import CacheController from './CacheController';
-import { cleanupError, buildErrorResponse } from '../lib/ResponseBuilder';
-import * as fasterize from '../lib/fasterize';
-import IMap from '../lib/IMap';
+import { buildErrorResponse, cleanupError } from '../lib/ResponseBuilder';
+import * as cloudfront from '../lib/cloudfront';
 import { ServiceResponse } from '../lib/service';
+import IMap from '../lib/IMap';
 
-export default class FasterizeCacheController implements CacheController {
+export default class CloudfrontController implements CacheController {
   public get flushZoneConfig(): Hapi.RouteOptions {
     return {
       handler: this.flushZone.bind(this),
-      tags: ['api', 'cache', 'fasterize'],
-      description: 'Flush Fasterize cache',
+      tags: ['api', 'cache', 'cloudfront'],
+      description: 'Flush Cloudfront cache',
       validate: {
         params: this.paramsSchema,
         payload: this.payloadSchema,
@@ -26,21 +26,22 @@ export default class FasterizeCacheController implements CacheController {
 
   public async flushZone(request: Hapi.Request, _: Hapi.ResponseToolkit) {
     try {
-      const response: ServiceResponse = await fasterize.flushConfig(
+      const response: ServiceResponse = await cloudfront.flushDistribution(
         request.params['zone_id'],
-        (request.payload as IMap<string>)['authorizationToken']
+        (request.payload as IMap<string>)['awsAccessKeyID'],
+        (request.payload as IMap<string>)['awsSecretAccessKey']
       );
       return { remoteStatusCode: 200, remoteResponse: response.body };
     } catch (error) {
-      throw buildErrorResponse(error, 'fasterize');
+      throw buildErrorResponse(error, 'cloudfront');
     }
   }
 
   public get flushURLsConfig(): Hapi.RouteOptions {
     return {
       handler: this.flushURLs.bind(this),
-      tags: ['api', 'cache', 'fasterize'],
-      description: 'Flush Fasterize cache URL',
+      tags: ['api', 'cache', 'cloudfront'],
+      description: 'Flush Cloudfront cache URL',
       validate: {
         params: this.paramsSchema,
         payload: this.payloadSchema.keys({
@@ -63,35 +64,39 @@ export default class FasterizeCacheController implements CacheController {
 
   public async flushURLs(request: Hapi.Request, _: Hapi.ResponseToolkit) {
     try {
-      await Promise.all(
-        (request.payload as IMap<string[]>)['urls'].map((url: string) => {
-          return fasterize.flushURL(
-            request.params['zone_id'],
-            url,
-            (request.payload as IMap<string>)['authorizationToken']
-          );
-        })
+      const response: ServiceResponse = await cloudfront.flushURLs(
+        request.params['zone_id'],
+        (request.payload as IMap<string[]>)['urls'],
+        (request.payload as IMap<string>)['awsAccessKeyID'],
+        (request.payload as IMap<string>)['awsSecretAccessKey']
       );
-      return {
-        remoteStatusCode: 200,
-        remoteResponse: { success: true },
-      };
+      return { remoteStatusCode: 200, remoteResponse: response.body };
     } catch (error) {
-      throw buildErrorResponse(error, 'fasterize');
+      throw buildErrorResponse(error, 'cloudfront');
     }
   }
 
   public get key() {
-    return 'fasterize';
+    return 'cloudfront';
   }
 
   public get responsesSchema(): any {
     return {
       200: {
-        description: 'Fasterize cache flushed',
+        description: 'Cloudfront cache flushed',
         schema: Joi.object({
           statusCode: Joi.number().valid(200),
-          remoteResponse: Joi.object({ success: Joi.boolean().valid(true) }),
+          remoteResponse: Joi.object({
+            Invalidation: Joi.object({
+              Id: Joi.string().example('abcd'),
+              Status: Joi.string().example('InProgress'),
+              CreateTime: Joi.date(),
+              InvalidationBatch: Joi.object({
+                Paths: Joi.array(),
+                CallerReference: Joi.string(),
+              }),
+            }),
+          }),
         }),
       },
       400: {
@@ -131,17 +136,21 @@ export default class FasterizeCacheController implements CacheController {
     return {
       zone_id: Joi.string()
         .required()
-        .example('42')
-        .description('Fasterize config ID to flush'),
+        .example('abcd')
+        .description('Cloudfront distribution ID to flush'),
     };
   }
 
   public get payloadSchema(): Joi.ObjectSchema {
     return Joi.object().keys({
-      authorizationToken: Joi.string()
+      awsAccessKeyID: Joi.string()
         .required()
-        .example('U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=')
-        .description('Fasterize API Key'),
+        .example('xxx')
+        .description('AWS access key ID'),
+      awsSecretAccessKey: Joi.string()
+        .required()
+        .example('xxx')
+        .description('AWS secret access key'),
     });
   }
 }

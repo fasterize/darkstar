@@ -7,30 +7,30 @@ import * as nock from 'nock';
 
 import { server } from '../../src/darkstar';
 
-describe('/v1/caches/fasterize', () => {
-  let fasterizeAPIMock: nock.Scope;
+describe('/v1/caches/fastly', () => {
+  let fastlyAPIMock: nock.Scope;
 
   beforeEach(() => {
-    fasterizeAPIMock = nock('https://api.fasterize.com');
+    fastlyAPIMock = nock('https://api.fastly.com');
   });
 
   describe('/zones', () => {
     describe('DELETE', () => {
       let flushRequest: request.Test;
-      let fasterizeFlushMock: nock.Interceptor;
+      let fastlyFlushMock: nock.Interceptor;
 
       beforeEach(() => {
         flushRequest = request(server.listener)
-          .delete('/v1/caches/fasterize/zones/1')
+          .delete('/v1/caches/fastly/zones/abcd')
           .set('accept', 'application/json');
-        fasterizeFlushMock = fasterizeAPIMock.delete('/v1/configs/1/cache');
+        fastlyFlushMock = fastlyAPIMock.post('/service/abcd/purge_all');
       });
 
-      it('should flush a complete zone of the Fasterize cache', () => {
-        fasterizeFlushMock
+      it('should flush a complete zone of the Fastly cache', () => {
+        fastlyFlushMock
           .matchHeader('accept', 'application/json')
-          .matchHeader('authorization', 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=')
-          .reply(200, { success: true });
+          .matchHeader('Fastly-Key', 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=')
+          .reply(200, { status: 'ok' });
 
         return new Promise((resolve, reject) => {
           flushRequest
@@ -41,20 +41,20 @@ describe('/v1/caches/fasterize', () => {
             .expect(200)
             .expect({
               remoteStatusCode: 200,
-              remoteResponse: { success: true },
+              remoteResponse: { status: 'ok' },
             })
             .end((error: any, _: request.Response) => {
               if (error) {
                 reject(error);
               }
-              fasterizeAPIMock.done();
+              fastlyAPIMock.done();
               resolve();
             });
         });
       });
 
       it('should reply "Bad request" when invalid payload is sent', () => {
-        fasterizeFlushMock.times(0);
+        fastlyFlushMock.times(0);
 
         return new Promise((resolve, reject) => {
           flushRequest
@@ -69,23 +69,23 @@ describe('/v1/caches/fasterize', () => {
               if (error) {
                 reject(error);
               }
-              fasterizeAPIMock.done();
+              fastlyAPIMock.done();
               resolve();
             });
         });
       });
 
-      it('should reply bad request when receiving Fasterize cache client errors', () => {
-        const fasterizeError = {
+      it('should reply bad request when receiving Fastly cache client errors', () => {
+        const fastlyError = {
           code: 401,
-          message: 'The authorization token is invalid',
+          message: 'The Fastly-key token is invalid',
           status: 'Unauthorized',
         };
 
-        fasterizeFlushMock
+        fastlyFlushMock
           .matchHeader('accept', 'application/json')
-          .matchHeader('authorization', 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=')
-          .reply(401, fasterizeError);
+          .matchHeader('Fastly-Key', 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=')
+          .reply(401, fastlyError);
 
         return new Promise((resolve, reject) => {
           flushRequest
@@ -97,29 +97,29 @@ describe('/v1/caches/fasterize', () => {
             .expect({
               message: 'A remote error occurred',
               remoteStatusCode: 401,
-              remoteResponse: fasterizeError,
+              remoteResponse: fastlyError,
             })
             .end((error: any, _: request.Response) => {
               if (error) {
                 reject(error);
               }
-              fasterizeAPIMock.done();
+              fastlyAPIMock.done();
               resolve();
             });
         });
       });
 
-      it('should reply bad gateway when receiving Fasterize cache server errors', () => {
-        const fasterizeError = {
+      it('should reply bad gateway when receiving Fastly cache server errors', () => {
+        const fastlyError = {
           code: 500,
           message: 'error',
           status: 'Internal Server Error',
         };
 
-        fasterizeFlushMock
+        fastlyFlushMock
           .matchHeader('accept', 'application/json')
-          .matchHeader('authorization', 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=')
-          .reply(500, fasterizeError);
+          .matchHeader('Fastly-key', 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=')
+          .reply(500, fastlyError);
 
         return new Promise((resolve, reject) => {
           flushRequest
@@ -131,22 +131,22 @@ describe('/v1/caches/fasterize', () => {
             .expect({
               message: 'A remote error occurred',
               remoteStatusCode: 500,
-              remoteResponse: fasterizeError,
+              remoteResponse: fastlyError,
             })
             .end((error: any, _: request.Response) => {
               if (error) {
                 reject(error);
               }
-              fasterizeAPIMock.done();
+              fastlyAPIMock.done();
               resolve();
             });
         });
       });
 
-      it('should reply bad gateway when an error occurred while accessing Fasterize API', () => {
-        fasterizeFlushMock
+      it('should reply bad gateway when an error occurred while accessing Fastly API', () => {
+        fastlyFlushMock
           .matchHeader('accept', 'application/json')
-          .matchHeader('authorization', 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=')
+          .matchHeader('Fastly-key', 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=')
           .replyWithError('connection error');
 
         return new Promise((resolve, reject) => {
@@ -157,13 +157,13 @@ describe('/v1/caches/fasterize', () => {
             .expect('content-type', /application\/json/)
             .expect(502)
             .expect({
-              message: 'An error occurred while accessing fasterize API: connection error',
+              message: 'An error occurred while accessing fastly API: connection error',
             })
             .end((error: any, _: request.Response) => {
               if (error) {
                 reject(error);
               }
-              fasterizeAPIMock.done();
+              fastlyAPIMock.done();
               resolve();
             });
         });
@@ -171,90 +171,79 @@ describe('/v1/caches/fasterize', () => {
     });
   });
 
-  describe('/zone/${zone_id}/urls', () => {
+  describe('/zones/${zone_id}/urls', () => {
     describe('DELETE', () => {
       let flushRequest: request.Test;
+      let flushMock: nock.Scope;
 
       beforeEach(() => {
         flushRequest = request(server.listener)
-          .delete('/v1/caches/fasterize/zones/1/urls')
+          .delete('/v1/caches/fastly/zones/abcd/urls')
           .set('accept', 'application/json');
+        flushMock = nock('https://test-domain.com');
       });
 
-      it('should flush an URL of the Fasterize cache', () => {
-        fasterizeAPIMock
-          .delete('/v1/configs/1/cache', {
-            url: 'http://test-domain.com/image1.png',
-          })
-          .matchHeader('content-type', 'application/json')
-          .matchHeader('authorization', 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=')
-          .reply(200, { success: true });
+      it('should flush a URL of the Fastly cache', () => {
+        flushMock
+          .intercept('/image.png', 'PURGE')
+          .matchHeader('Fastly-Key', 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=')
+          .reply(200, { status: 'ok' });
 
         return new Promise((resolve, reject) => {
           flushRequest
             .send({
               authorizationToken: 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=',
-              urls: ['http://test-domain.com/image1.png'],
+              urls: ['https://test-domain.com/image.png'],
             })
             .expect('content-type', /application\/json/)
             .expect(200)
             .expect({
               remoteStatusCode: 200,
-              remoteResponse: { success: true },
+              remoteResponse: { status: 'ok' },
             })
             .end((error: any, _: request.Response) => {
               if (error) {
                 reject(error);
               }
-              fasterizeAPIMock.done();
+              flushMock.done();
               resolve();
             });
         });
       });
 
-      it('should flush more than 1 URL of the Fasterize cache', () => {
-        fasterizeAPIMock
-          .delete('/v1/configs/1/cache', {
-            url: 'https://test-domain.com/image1.png',
-          })
-          .matchHeader('content-type', 'application/json')
-          .matchHeader('authorization', 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=')
-          .reply(200, { success: true })
-          .delete('/v1/configs/1/cache', {
-            url: 'https://test-domain.com/image2.png',
-          })
-          .matchHeader('content-type', 'application/json')
-          .matchHeader('authorization', 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=')
-          .reply(200, { success: true });
+      it('should flush more than 1 URL of the Fastly cache', () => {
+        flushMock
+          .intercept('/image.png', 'PURGE')
+          .matchHeader('Fastly-Key', 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=')
+          .reply(200, { status: 'ok' })
+          .intercept('/image2.png', 'PURGE')
+          .matchHeader('Fastly-Key', 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=')
+          .reply(200, { status: 'ok' });
 
         return new Promise((resolve, reject) => {
           flushRequest
             .send({
               authorizationToken: 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=',
-              urls: ['https://test-domain.com/image1.png', 'https://test-domain.com/image2.png'],
+              urls: ['https://test-domain.com/image.png', 'https://test-domain.com/image2.png'],
             })
             .expect('content-type', /application\/json/)
             .expect(200)
             .expect({
               remoteStatusCode: 200,
-              remoteResponse: { success: true },
+              remoteResponse: { status: 'ok' },
             })
             .end((error: any, _: request.Response) => {
               if (error) {
                 reject(error);
               }
-              fasterizeAPIMock.done();
+              flushMock.done();
               resolve();
             });
         });
       });
 
       it('should reply "Bad request" when invalid payload is sent', () => {
-        fasterizeAPIMock
-          .delete('/v1/configs/1/cache', {
-            url: 'http://test-domain.com/image1.png',
-          })
-          .times(0);
+        flushMock.intercept('/image.png', 'PURGE').times(0);
 
         return new Promise((resolve, reject) => {
           flushRequest
@@ -271,142 +260,107 @@ describe('/v1/caches/fasterize', () => {
               if (error) {
                 reject(error);
               }
-              fasterizeAPIMock.done();
+              flushMock.done();
               resolve();
             });
         });
       });
 
-      it('should reply "Bad request" when `urls` is empty', () => {
-        fasterizeAPIMock
-          .delete('/v1/configs/1/cache', {
-            url: 'http://test-domain.com/image1.png',
-          })
-          .times(0);
-
-        return new Promise((resolve, reject) => {
-          flushRequest
-            .send({
-              authorizationToken: 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=',
-              urls: [],
-            })
-            .expect('content-type', /application\/json/)
-            .expect(400)
-            .expect({
-              message: 'child "urls" fails because ["urls" must contain at least 1 items]',
-              validation: { source: 'payload', keys: ['urls'] },
-            })
-            .end((error: any, _: request.Response) => {
-              if (error) {
-                reject(error);
-              }
-              fasterizeAPIMock.done();
-              resolve();
-            });
-        });
-      });
-
-      it('should reply bad request when receiving Fasterize cache client errors', () => {
-        const fasterizeError = {
+      it('should reply bad request when receiving Fastly cache client errors', () => {
+        const fastlyError = {
           code: 401,
-          message: 'The authorization token is invalid',
+          message: 'The Fastly-key token is invalid',
           status: 'Unauthorized',
         };
 
-        fasterizeAPIMock
-          .delete('/v1/configs/1/cache', {
-            url: 'http://test-domain.com/image1.png',
-          })
-          .matchHeader('content-type', 'application/json')
-          .matchHeader('authorization', 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=')
-          .reply(401, fasterizeError);
+        flushMock
+          .intercept('/image.png', 'PURGE')
+          .matchHeader('accept', 'application/json')
+          .matchHeader('Fastly-Key', 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=')
+          .reply(401, fastlyError);
 
         return new Promise((resolve, reject) => {
           flushRequest
             .send({
               authorizationToken: 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=',
-              urls: ['http://test-domain.com/image1.png'],
+              urls: ['https://test-domain.com/image.png'],
             })
             .expect('content-type', /application\/json/)
             .expect(400)
             .expect({
               message: 'A remote error occurred',
               remoteStatusCode: 401,
-              remoteResponse: fasterizeError,
+              remoteResponse: fastlyError,
             })
             .end((error: any, _: request.Response) => {
               if (error) {
                 reject(error);
               }
-              fasterizeAPIMock.done();
+              flushMock.done();
               resolve();
             });
         });
       });
 
-      it('should reply bad gateway when receiving Fasterize cache server errors', () => {
-        const fasterizeError = {
+      it('should reply bad gateway when receiving Fastly cache server errors', () => {
+        const fastlyError = {
           code: 500,
           message: 'error',
           status: 'Internal Server Error',
         };
 
-        fasterizeAPIMock
-          .delete('/v1/configs/1/cache', {
-            url: 'http://test-domain.com/image1.png',
-          })
-          .matchHeader('content-type', 'application/json')
-          .matchHeader('authorization', 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=')
-          .reply(500, fasterizeError);
+        flushMock
+          .intercept('/image.png', 'PURGE')
+          .matchHeader('accept', 'application/json')
+          .matchHeader('Fastly-key', 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=')
+          .reply(500, fastlyError);
 
         return new Promise((resolve, reject) => {
           flushRequest
             .send({
               authorizationToken: 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=',
-              urls: ['http://test-domain.com/image1.png'],
+              urls: ['https://test-domain.com/image.png'],
             })
             .expect('content-type', /application\/json/)
             .expect(502)
             .expect({
               message: 'A remote error occurred',
               remoteStatusCode: 500,
-              remoteResponse: fasterizeError,
+              remoteResponse: fastlyError,
             })
             .end((error: any, _: request.Response) => {
               if (error) {
                 reject(error);
               }
-              fasterizeAPIMock.done();
+              flushMock.done();
               resolve();
             });
         });
       });
 
-      it('should reply bad gateway when an error occurred while accessing Fasterize API', () => {
-        fasterizeAPIMock
-          .delete('/v1/configs/1/cache', {
-            url: 'http://test-domain.com/image1.png',
-          })
-          .matchHeader('content-type', 'application/json')
-          .matchHeader('authorization', 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=')
+      it('should reply bad gateway when an error occurred while accessing Fastly API', () => {
+        flushMock
+          .intercept('/image.png', 'PURGE')
+          .matchHeader('accept', 'application/json')
+          .matchHeader('Fastly-key', 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=')
           .replyWithError('connection error');
 
         return new Promise((resolve, reject) => {
           flushRequest
             .send({
               authorizationToken: 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=',
-              urls: ['http://test-domain.com/image1.png'],
+              urls: ['https://test-domain.com/image.png'],
             })
             .expect('content-type', /application\/json/)
             .expect(502)
             .expect({
-              message: 'An error occurred while accessing fasterize API: connection error',
+              message: 'An error occurred while accessing fastly API: connection error',
             })
             .end((error: any, _: request.Response) => {
               if (error) {
                 reject(error);
               }
-              fasterizeAPIMock.done();
+              flushMock.done();
               resolve();
             });
         });

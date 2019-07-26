@@ -1,15 +1,14 @@
 import * as Hapi from 'hapi';
 import * as Joi from 'joi';
-import * as http from 'superagent';
 import * as Boom from 'boom';
-import * as Promise from 'bluebird';
 import CacheController from './CacheController';
-import ResponseBuilder from '../lib/ResponseBuilder';
+import { cleanupError, buildErrorResponse } from '../lib/ResponseBuilder';
 import * as fastly from '../lib/fastly';
 import IMap from '../lib/IMap';
+import { ServiceResponse } from '../lib/service';
 
-export default class FastlyCacheController implements CacheController {
-  public get flushZoneConfig(): Hapi.IRouteAdditionalConfigurationOptions {
+export default class FastlyController implements CacheController {
+  public get flushZoneConfig(): Hapi.RouteOptions {
     return {
       handler: this.flushZone.bind(this),
       tags: ['api', 'cache', 'fastly'],
@@ -17,27 +16,27 @@ export default class FastlyCacheController implements CacheController {
       validate: {
         params: this.paramsSchema,
         payload: this.payloadSchema,
-        failAction: (request: Hapi.Request, reply: Hapi.IReply, source: string, error: Boom.BoomError) => {
-          reply(ResponseBuilder.cleanupError(error));
+        failAction: (_: Hapi.Request, __: Hapi.ResponseToolkit, error: Boom): Hapi.ResponseObject => {
+          throw cleanupError(error);
         },
       },
       plugins: { 'hapi-swagger': { responses: this.responsesSchema } },
     };
   }
 
-  public flushZone(request: Hapi.Request, reply: Hapi.IReply) {
-    // tslint:disable-next-line:no-string-literal
-    fastly.flushService(request.params['zone_id'], request.payload['authorizationToken'])
-      .then((response: http.Response) => {
-        reply({ remoteStatusCode: 200, remoteResponse: response.body })
-          .code(response.status);
-      })
-      .catch((error: any) => {
-        reply(ResponseBuilder.buildErrorResponse(error, 'fastly'));
-      });
+  public async flushZone(request: Hapi.Request, _: Hapi.ResponseToolkit) {
+    try {
+      const response: ServiceResponse = await fastly.flushService(
+        request.params['zone_id'],
+        (request.payload as IMap<string>)['authorizationToken']
+      );
+      return { remoteStatusCode: 200, remoteResponse: response.body };
+    } catch (error) {
+      throw buildErrorResponse(error, 'fastly');
+    }
   }
 
-  public get flushURLsConfig(): Hapi.IRouteAdditionalConfigurationOptions {
+  public get flushURLsConfig(): Hapi.RouteOptions {
     return {
       handler: this.flushURLs.bind(this),
       tags: ['api', 'cache', 'fastly'],
@@ -45,36 +44,34 @@ export default class FastlyCacheController implements CacheController {
       validate: {
         params: this.paramsSchema,
         payload: this.payloadSchema.keys({
-          urls: Joi.array().items(Joi.string().uri({
-            scheme: [
-              'http',
-              'https',
-            ],
-          })).min(1).required(),
+          urls: Joi.array()
+            .items(
+              Joi.string().uri({
+                scheme: ['http', 'https'],
+              })
+            )
+            .min(1)
+            .required(),
         }),
-        failAction: (request: Hapi.Request, reply: Hapi.IReply, source: string, error: Boom.BoomError) => {
-          reply(ResponseBuilder.cleanupError(error));
+        failAction: (_: Hapi.Request, __: Hapi.ResponseToolkit, error: Boom): Hapi.ResponseObject => {
+          throw cleanupError(error);
         },
       },
       plugins: { 'hapi-swagger': { responses: this.responsesSchema } },
     };
   }
 
-  public flushURLs(request: Hapi.Request, reply: Hapi.IReply) {
-    Promise.all(
-      // tslint:disable-next-line:no-string-literal
-      request.payload['urls'].map((url: string) => {
-        // tslint:disable-next-line:no-string-literal
-        return fastly.flushURL(url, request.payload['authorizationToken']);
-      })
-    )
-      .then(() => {
-        reply({ remoteStatusCode: 200, remoteResponse: { status: 'ok' } })
-          .code(200);
-      })
-      .catch((error: any) => {
-        reply(ResponseBuilder.buildErrorResponse(error, 'fastly'));
-      });
+  public async flushURLs(request: Hapi.Request, _: Hapi.ResponseToolkit) {
+    try {
+      await Promise.all(
+        (request.payload as IMap<string[]>)['urls'].map((url: string) => {
+          return fastly.flushURL(url, (request.payload as IMap<string>)['authorizationToken']);
+        })
+      );
+      return { remoteStatusCode: 200, remoteResponse: { status: 'ok' } };
+    } catch (error) {
+      throw buildErrorResponse(error, 'fastly');
+    }
   }
 
   public get key() {
@@ -96,7 +93,10 @@ export default class FastlyCacheController implements CacheController {
           statusCode: Joi.number().valid(400),
           error: Joi.string().example('Bad Request'),
           remoteResponse: Joi.object({
-            code: Joi.number().min(400).max(499).example(401),
+            code: Joi.number()
+              .min(400)
+              .max(499)
+              .example(401),
             message: Joi.string().example('The authorization token is invalid'),
             status: Joi.string().example('Unauthorized'),
           }),
@@ -108,7 +108,10 @@ export default class FastlyCacheController implements CacheController {
           statusCode: Joi.number().valid(502),
           error: Joi.string().example('Bad Gateway'),
           remoteResponse: Joi.object({
-            code: Joi.number().min(500).max(599).example(500),
+            code: Joi.number()
+              .min(500)
+              .max(599)
+              .example(500),
             message: Joi.string().example('An error occurred while flushing the cache'),
             status: Joi.string().example('Internal Server Error'),
           }),

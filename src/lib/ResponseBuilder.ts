@@ -1,33 +1,37 @@
 import * as Boom from 'boom';
+import { ServiceError } from './service';
 
-namespace ResponseBuilder {
-  export function buildErrorResponse(error: any, errorKey: string): Boom.BoomError {
-    let responseError: Boom.BoomError;
-
-    if (error.response) {
-      if (error.response.status >= 400 && error.response.status < 500) {
-        responseError = Boom.badRequest();
-      }
-
-      if (error.response.status >= 500 && error.response.status < 600) {
-        responseError = Boom.badGateway();
-      }
-
-      responseError.output.payload.message = 'A remote error occurred';
-      responseError.output.payload.remoteResponse = error.response.body;
-      responseError.output.payload.remoteStatusCode = error.response.status;
-    } else {
-      responseError = Boom.wrap(new Error(`An error occurred while accessing ${errorKey} API: ${error.message}`), 502);
-    }
-
-    return cleanupError(responseError);
-  }
-
-  export function cleanupError(error: Boom.BoomError): Boom.BoomError {
-    delete error.output.payload.statusCode;
-    delete error.output.payload.error;
-    return error;
-  }
+interface DarkstarErrorPayload extends Boom.Payload {
+  remoteResponse: object;
+  remoteStatusCode: number;
 }
 
-export default ResponseBuilder;
+export function buildErrorResponse(error: ServiceError, errorKey: string): Boom {
+  let responseError: Boom;
+
+  if (error.response && error.response.status) {
+    if (error.response.status >= 400 && error.response.status < 500) {
+      responseError = Boom.badRequest();
+    } else if (error.response.status >= 500 && error.response.status < 600) {
+      responseError = Boom.badGateway();
+    }
+
+    responseError.output.payload = {
+      message: 'A remote error occurred',
+      remoteResponse: error.response.body,
+      remoteStatusCode: error.response.status,
+    } as DarkstarErrorPayload;
+  } else {
+    responseError = Boom.boomify(new Error(`An error occurred while accessing ${errorKey} API: ${error.message}`), {
+      statusCode: 502,
+    });
+  }
+
+  return cleanupError(responseError);
+}
+
+export function cleanupError(error: Boom): Boom {
+  delete error.output.payload.statusCode;
+  delete error.output.payload.error;
+  return error;
+}

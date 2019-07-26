@@ -1,60 +1,70 @@
-var gulp = require('gulp'),
-    ts = require('gulp-typescript'),
-    nodemon = require('gulp-nodemon'),
-    lab = require('gulp-lab'),
-    clean = require('gulp-clean'),
-    gulpCopy = require('gulp-copy'),
-    runSequence = require('run-sequence'),
-    tslint = require("gulp-tslint");
+const { src, dest, series, parallel } = require('gulp');
+const tslint = require('gulp-tslint');
+const gulpCopy = require('gulp-copy');
+const ts = require('gulp-typescript');
+const lab = require('gulp-lab');
+const nodemon = require('gulp-nodemon');
+const clean = require('gulp-clean');
+
 var tsProject = ts.createProject('tsconfig.json');
 
-gulp.task('clean', function () {
-  return gulp.src('dist', {read: false})
-    .pipe(clean());
-});
+function cleanBuild() {
+  return src('dist', { read: false }).pipe(clean());
+}
 
-gulp.task('lint', function () {
-  return gulp.src(['src/**/*.ts', 'test/**/*.ts'])
-    .pipe(tslint())
-    .pipe(tslint.report('verbose'));
-});
+function lint() {
+  return src(['src/**/*.ts', 'test/**/*.ts'])
+    .pipe(tslint({ formatter: 'verbose' }))
+    .pipe(tslint.report());
+}
 
-gulp.task('copy-resources', function () {
-  return gulp.src(['package.json'])
-    .pipe(gulpCopy('dist'));
-});
+function copyResources() {
+  return src(['package.json']).pipe(gulpCopy('dist'));
+}
 
-gulp.task('compile', function () {
-  return tsProject.src()
-    .pipe(ts(tsProject))
-    .js.pipe(gulp.dest('dist'));
-});
+function compile() {
+  return tsProject
+    .src()
+    .pipe(tsProject())
+    .js.pipe(dest('dist'));
+}
 
-gulp.task('build', ['copy-resources', 'compile']);
-
-gulp.task('clean-test', function() {
-  return runSequence('clean', 'test');
-});
-
-gulp.task('start', ['build'], function () {
-  nodemon({
+function startServer() {
+  return nodemon({
     script: 'dist/src/darkstar.js',
     watch: ['src'],
     tasks: ['compile'],
-    ext: "js json ts"
+    ext: 'js json ts',
   });
-});
+}
 
-gulp.task('test', ['build'], function () {
-  return gulp.src('dist/test')
-    .pipe(lab('-c --reporter console'));
-});
+function runTests() {
+  return src('dist/test').pipe(lab('--reporter console'));
+}
 
-gulp.task('watch-test', function () {
-  gulp.watch(['src/**/*.ts', 'test/**/*.ts'], ['clean-test']);
-});
+function watchTest() {
+  return watch(['src/**/*.ts', 'test/**/*.ts'], 'cleanTest');
+}
 
-gulp.task('ci', ['build', 'lint'], function () {
-  gulp.src('dist/test')
-    .pipe(lab('-c -r junit -o report/test.xml -r clover -o report/coverage.xml -r console -o stdout'));
-});
+function runTestsCI() {
+  return src('dist/test').pipe(
+    lab(
+      //"-c -r junit -o report/test.xml -r clover -o report/coverage.xml -r console -o stdout",
+      '-r junit -o report/test.xml -r console -o stdout'
+    )
+  );
+}
+
+exports.clean = cleanBuild;
+exports.lint = lint;
+exports.compile = compile;
+exports.build = parallel(copyResources, compile);
+exports.test = series(exports.build, runTests);
+exports.cleanTest = series(cleanBuild, runTests);
+exports.start = series(exports.build, startServer);
+exports.ci = series(
+  exports.build,
+  //lint,
+  runTestsCI
+);
+exports.watch = watchTest;

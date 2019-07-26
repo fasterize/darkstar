@@ -1,11 +1,11 @@
 import * as Hapi from 'hapi';
 import * as Joi from 'joi';
-import * as http from 'superagent';
 import * as Boom from 'boom';
 import ICacheController from './CacheController';
-import ResponseBuilder from '../lib/ResponseBuilder';
+import { cleanupError, buildErrorResponse } from '../lib/ResponseBuilder';
 import * as keycdn from '../lib/keycdn';
 import IMap from '../lib/IMap';
+import { ServiceResponse } from '../lib/service';
 
 // KeyCDN API documentation: https://www.keycdn.com/api
 export default class KeyCDNController implements ICacheController {
@@ -13,7 +13,7 @@ export default class KeyCDNController implements ICacheController {
     return 'keycdn';
   }
 
-  public get flushZoneConfig(): Hapi.IRouteAdditionalConfigurationOptions {
+  public get flushZoneConfig(): Hapi.RouteOptions {
     return {
       handler: this.flushZone.bind(this),
       tags: ['api', 'cache', 'keycdn'],
@@ -21,27 +21,27 @@ export default class KeyCDNController implements ICacheController {
       validate: {
         params: this.paramsSchema,
         payload: this.payloadSchema,
-        failAction: (request: Hapi.Request, reply: Hapi.IReply, source: string, error: Boom.BoomError) => {
-          reply(ResponseBuilder.cleanupError(error));
+        failAction: (_: Hapi.Request, __: Hapi.ResponseToolkit, error: Boom): Hapi.ResponseObject => {
+          throw cleanupError(error);
         },
       },
       plugins: { 'hapi-swagger': { responses: this.responsesSchema } },
     };
   }
 
-  public flushZone(request: Hapi.Request, reply: Hapi.IReply) {
-    // tslint:disable-next-line:no-string-literal
-    keycdn.flushZone(request.params['zone_id'], request.payload['authorizationToken'])
-      .then((response: http.Response) => {
-        reply({ remoteStatusCode: 200, remoteResponse: response.body })
-          .code(response.status);
-      })
-      .catch((error: any) => {
-        reply(ResponseBuilder.buildErrorResponse(error, 'keycdn'));
-      });
+  public async flushZone(request: Hapi.Request, _: Hapi.ResponseToolkit) {
+    try {
+      const response: ServiceResponse = await keycdn.flushZone(
+        request.params['zone_id'],
+        (request.payload as IMap<string>)['authorizationToken']
+      );
+      return { remoteStatusCode: 200, remoteResponse: response.body };
+    } catch (error) {
+      throw buildErrorResponse(error, 'keycdn');
+    }
   }
 
-  public get flushURLsConfig(): Hapi.IRouteAdditionalConfigurationOptions {
+  public get flushURLsConfig(): Hapi.RouteOptions {
     return {
       handler: this.flushURLs.bind(this),
       tags: ['api', 'cache', 'keycdn'],
@@ -49,31 +49,34 @@ export default class KeyCDNController implements ICacheController {
       validate: {
         params: this.paramsSchema,
         payload: this.payloadSchema.keys({
-          urls: Joi.array().items(Joi.string().uri({
-            scheme: [
-              'http',
-              'https',
-            ],
-          })).min(1).required(),
+          urls: Joi.array()
+            .items(
+              Joi.string().uri({
+                scheme: ['http', 'https'],
+              })
+            )
+            .min(1)
+            .required(),
         }),
-        failAction: (request: Hapi.Request, reply: Hapi.IReply, source: string, error: Boom.BoomError) => {
-          reply(ResponseBuilder.cleanupError(error));
+        failAction: (_: Hapi.Request, __: Hapi.ResponseToolkit, error: Boom): Hapi.ResponseObject => {
+          throw cleanupError(error);
         },
       },
       plugins: { 'hapi-swagger': { responses: this.responsesSchema } },
     };
   }
 
-  public flushURLs(request: Hapi.Request, reply: Hapi.IReply) {
-    // tslint:disable-next-line:no-string-literal
-    keycdn.flushURLs(request.params['zone_id'], request.payload['urls'], request.payload['authorizationToken'])
-      .then((response: http.Response) => {
-        reply({ remoteStatusCode: 200, remoteResponse: response.body })
-          .code(response.status);
-      })
-      .catch((error: any) => {
-        reply(ResponseBuilder.buildErrorResponse(error, 'keycdn'));
-      });
+  public async flushURLs(request: Hapi.Request, _: Hapi.ResponseToolkit) {
+    try {
+      const response: ServiceResponse = await keycdn.flushURLs(
+        request.params['zone_id'],
+        (request.payload as IMap<string[]>)['urls'],
+        (request.payload as IMap<string>)['authorizationToken']
+      );
+      return { remoteStatusCode: 200, remoteResponse: response.body };
+    } catch (error) {
+      throw buildErrorResponse(error, 'keycdn');
+    }
   }
 
   public get responsesSchema(): any {
