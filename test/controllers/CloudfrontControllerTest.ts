@@ -296,7 +296,7 @@ describe('/v1/caches/cloudfront', () => {
         cloudfrontAPIMock
           .post(
             '/2019-03-26/distribution/abcd/invalidation',
-            '<InvalidationBatch xmlns="http://cloudfront.amazonaws.com/doc/2019-03-26/"><Paths><Quantity>1</Quantity>' +
+            '<InvalidationBatch xmlns="http://cloudfront.amazonaws.com/doc/2019-03-26/"><Paths><Quantity>2</Quantity>' +
               '<Items><Path>/image1.png</Path><Path>/image2.png</Path>' +
               '</Items></Paths><CallerReference>0</CallerReference></InvalidationBatch>'
           )

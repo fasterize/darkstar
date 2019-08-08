@@ -41,7 +41,7 @@ export async function flushURLs(
       InvalidationBatch: {
         CallerReference: Date.now().toString(),
         Paths: {
-          Quantity: 1,
+          Quantity: uniqPaths.length,
           Items: uniqPaths,
         },
       },
