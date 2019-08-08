@@ -100,6 +100,7 @@ export default class KeyCDNController implements ICacheController {
             description: Joi.string().example('Unauthorized'),
             status: Joi.string().example('error'),
           }),
+          remoteStatusCode: Joi.number().example(403),
         }),
       },
       502: {

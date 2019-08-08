@@ -92,7 +92,10 @@ export default class CloudfrontController implements CacheController {
               Status: Joi.string().example('InProgress'),
               CreateTime: Joi.date(),
               InvalidationBatch: Joi.object({
-                Paths: Joi.array(),
+                Paths: Joi.object({
+                  Quantity: Joi.number(),
+                  Items: Joi.array().items(Joi.string()),
+                }),
                 CallerReference: Joi.string(),
               }),
             }),
@@ -112,6 +115,7 @@ export default class CloudfrontController implements CacheController {
             message: Joi.string().example('The authorization token is invalid'),
             status: Joi.string().example('Unauthorized'),
           }),
+          remoteStatusCode: Joi.number().example(403),
         }),
       },
       502: {

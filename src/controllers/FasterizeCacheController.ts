@@ -107,6 +107,7 @@ export default class FasterizeCacheController implements CacheController {
             message: Joi.string().example('The authorization token is invalid'),
             status: Joi.string().example('Unauthorized'),
           }),
+          remoteStatusCode: Joi.number().example(403),
         }),
       },
       502: {
