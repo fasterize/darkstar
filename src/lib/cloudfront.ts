@@ -2,12 +2,14 @@ import * as AWS from 'aws-sdk';
 import * as bluebird from 'bluebird';
 import { ServiceResponse, ServiceError } from './service';
 
+const WILDCARD_FLUSH = '/*';
+
 export async function flushDistribution(
   distributionID: string,
   awsAccessKeyID: string,
   awsSecretAccessKey: string
 ): bluebird<ServiceResponse> {
-  return flushURLs(distributionID, ['/'], awsAccessKeyID, awsSecretAccessKey);
+  return flushURLs(distributionID, [WILDCARD_FLUSH], awsAccessKeyID, awsSecretAccessKey);
 }
 
 export async function flushURLs(
@@ -16,6 +18,16 @@ export async function flushURLs(
   awsAccessKeyID: string,
   awsSecretAccessKey: string
 ): bluebird<ServiceResponse> {
+  let uniqPaths: string[];
+
+  if (urls.length === 1 && urls[0] === WILDCARD_FLUSH) {
+    uniqPaths = urls;
+  } else {
+    // it is currently not possible to invalidate by domain and Cloudfront invalidation by path only.
+    const paths = urls.map(url => new URL(url)).map(url => url.pathname);
+    uniqPaths = Array.from(new Set(paths));
+  }
+
   try {
     const request = new AWS.CloudFront({
       apiVersion: '2019-03-26',
@@ -30,7 +42,7 @@ export async function flushURLs(
         CallerReference: Date.now().toString(),
         Paths: {
           Quantity: 1,
-          Items: urls,
+          Items: uniqPaths,
         },
       },
     });

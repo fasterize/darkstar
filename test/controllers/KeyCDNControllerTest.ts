@@ -29,7 +29,7 @@ describe('/v1/caches/keycdn', () => {
       it('should flush a complete zone of KeyCDN', () => {
         keycdnFlushMock
           .matchHeader('accept', 'application/json')
-          .matchHeader('authorization', `Basic ${new Buffer('sk_prod_XXX:').toString('base64')}`)
+          .matchHeader('authorization', `Basic ${Buffer.from('sk_prod_XXX:').toString('base64')}`)
           .reply(200, {
             status: 'success',
             description: 'Cache has been cleared for zone 1.',
@@ -87,7 +87,7 @@ describe('/v1/caches/keycdn', () => {
 
         keycdnFlushMock
           .matchHeader('accept', 'application/json')
-          .matchHeader('authorization', `Basic ${new Buffer('sk_prod_XXX:').toString('base64')}`)
+          .matchHeader('authorization', `Basic ${Buffer.from('sk_prod_XXX:').toString('base64')}`)
           .reply(401, keycdnError);
 
         return new Promise((resolve, reject) => {
@@ -118,7 +118,7 @@ describe('/v1/caches/keycdn', () => {
 
         keycdnFlushMock
           .matchHeader('accept', 'application/json')
-          .matchHeader('authorization', `Basic ${new Buffer('sk_prod_XXX:').toString('base64')}`)
+          .matchHeader('authorization', `Basic ${Buffer.from('sk_prod_XXX:').toString('base64')}`)
           .reply(500, keycdnError);
 
         return new Promise((resolve, reject) => {
@@ -144,7 +144,7 @@ describe('/v1/caches/keycdn', () => {
       it('should reply bad gateway when an error occurred while accessing KeyCDN API', () => {
         keycdnFlushMock
           .matchHeader('accept', 'application/json')
-          .matchHeader('authorization', `Basic ${new Buffer('sk_prod_XXX:').toString('base64')}`)
+          .matchHeader('authorization', `Basic ${Buffer.from('sk_prod_XXX:').toString('base64')}`)
           .replyWithError('connection error');
 
         return new Promise((resolve, reject) => {
@@ -181,7 +181,7 @@ describe('/v1/caches/keycdn', () => {
             urls: ['https://test-domain.com/image1.png', 'https://test-domain.com/image2.png'],
           })
           .matchHeader('content-type', 'application/json')
-          .matchHeader('authorization', `Basic ${new Buffer('sk_prod_XXX:').toString('base64')}`)
+          .matchHeader('authorization', `Basic ${Buffer.from('sk_prod_XXX:').toString('base64')}`)
           .reply(200, {
             status: 'success',
             description: 'Cache has been cleared for URL(s).',
@@ -271,7 +271,7 @@ describe('/v1/caches/keycdn', () => {
             urls: ['https://test-domain.com/image1.png', 'https://test-domain.com/image2.png'],
           })
           .matchHeader('content-type', 'application/json')
-          .matchHeader('authorization', `Basic ${new Buffer('sk_prod_XXX:').toString('base64')}`)
+          .matchHeader('authorization', `Basic ${Buffer.from('sk_prod_XXX:').toString('base64')}`)
           .reply(401, keycdnError);
 
         return new Promise((resolve, reject) => {
@@ -308,7 +308,7 @@ describe('/v1/caches/keycdn', () => {
             urls: ['https://test-domain.com/image1.png', 'https://test-domain.com/image2.png'],
           })
           .matchHeader('content-type', 'application/json')
-          .matchHeader('authorization', `Basic ${new Buffer('sk_prod_XXX:').toString('base64')}`)
+          .matchHeader('authorization', `Basic ${Buffer.from('sk_prod_XXX:').toString('base64')}`)
           .reply(500, keycdnError);
 
         return new Promise((resolve, reject) => {
@@ -340,7 +340,7 @@ describe('/v1/caches/keycdn', () => {
             urls: ['https://test-domain.com/image1.png', 'https://test-domain.com/image2.png'],
           })
           .matchHeader('content-type', 'application/json')
-          .matchHeader('authorization', `Basic ${new Buffer('sk_prod_XXX:').toString('base64')}`)
+          .matchHeader('authorization', `Basic ${Buffer.from('sk_prod_XXX:').toString('base64')}`)
           .replyWithError('connection error');
 
         return new Promise((resolve, reject) => {

@@ -49,14 +49,14 @@ describe('/v1/caches', () => {
         cloudfrontFlushMock = cloudfrontAPIMock.post(
           '/2019-03-26/distribution/abcd/invalidation',
           '<InvalidationBatch xmlns="http://cloudfront.amazonaws.com/doc/2019-03-26/"><Paths><Quantity>1</Quantity>' +
-            '<Items><Path>/</Path></Items></Paths><CallerReference>0</CallerReference></InvalidationBatch>'
+            '<Items><Path>/*</Path></Items></Paths><CallerReference>0</CallerReference></InvalidationBatch>'
         );
       });
 
       it('should flush a complete zone of KeyCDN and Fasterize', () => {
         keycdnFlushMock
           .matchHeader('accept', 'application/json')
-          .matchHeader('authorization', `Basic ${new Buffer('sk_prod_XXX:').toString('base64')}`)
+          .matchHeader('authorization', `Basic ${Buffer.from('sk_prod_XXX:').toString('base64')}`)
           .reply(200, {
             status: 'success',
             description: 'Cache has been cleared for zone 1.',
@@ -73,7 +73,7 @@ describe('/v1/caches', () => {
           200,
           `<?xml version="1.0"?>\n<Invalidation xmlns="http://cloudfront.amazonaws.com/doc/2018-11-05/"><Id>abcd</Id>` +
             `<Status>InProgress</Status><CreateTime>2019-07-24T08:47:53.726Z</CreateTime><InvalidationBatch><Paths>` +
-            `<Quantity>1</Quantity><Items><Path>/</Path></Items></Paths><CallerReference>${Date.now().toString()}` +
+            `<Quantity>1</Quantity><Items><Path>/*</Path></Items></Paths><CallerReference>${Date.now().toString()}` +
             `</CallerReference></InvalidationBatch></Invalidation>`
         );
 
@@ -123,7 +123,7 @@ describe('/v1/caches', () => {
                       InvalidationBatch: {
                         CallerReference: '0',
                         Paths: {
-                          Items: ['/'],
+                          Items: ['/*'],
                           Quantity: 1,
                         },
                       },
@@ -218,7 +218,7 @@ describe('/v1/caches', () => {
 
         keycdnFlushMock
           .matchHeader('accept', 'application/json')
-          .matchHeader('authorization', `Basic ${new Buffer('sk_prod_XXX:').toString('base64')}`)
+          .matchHeader('authorization', `Basic ${Buffer.from('sk_prod_XXX:').toString('base64')}`)
           .reply(401, keycdnError);
         fasterizeFlushMock
           .matchHeader('accept', 'application/json')
@@ -232,7 +232,7 @@ describe('/v1/caches', () => {
           200,
           `<?xml version="1.0"?>\n<Invalidation xmlns="http://cloudfront.amazonaws.com/doc/2018-11-05/"><Id>abcd</Id>` +
             `<Status>InProgress</Status><CreateTime>2019-07-24T08:47:53.726Z</CreateTime><InvalidationBatch><Paths>` +
-            `<Quantity>1</Quantity><Items><Path>/</Path></Items></Paths><CallerReference>${Date.now().toString()}` +
+            `<Quantity>1</Quantity><Items><Path>/*</Path></Items></Paths><CallerReference>${Date.now().toString()}` +
             `</CallerReference></InvalidationBatch></Invalidation>`
         );
 
@@ -281,7 +281,7 @@ describe('/v1/caches', () => {
                       InvalidationBatch: {
                         CallerReference: '0',
                         Paths: {
-                          Items: ['/'],
+                          Items: ['/*'],
                           Quantity: 1,
                         },
                       },
@@ -313,7 +313,7 @@ describe('/v1/caches', () => {
 
         keycdnFlushMock
           .matchHeader('accept', 'application/json')
-          .matchHeader('authorization', `Basic ${new Buffer('sk_prod_XXX:').toString('base64')}`)
+          .matchHeader('authorization', `Basic ${Buffer.from('sk_prod_XXX:').toString('base64')}`)
           .reply(500, keycdnError);
         fasterizeFlushMock
           .matchHeader('accept', 'application/json')
@@ -327,7 +327,7 @@ describe('/v1/caches', () => {
           200,
           `<?xml version="1.0"?>\n<Invalidation xmlns="http://cloudfront.amazonaws.com/doc/2018-11-05/"><Id>abcd</Id>` +
             `<Status>InProgress</Status><CreateTime>2019-07-24T08:47:53.726Z</CreateTime><InvalidationBatch><Paths>` +
-            `<Quantity>1</Quantity><Items><Path>/</Path></Items></Paths><CallerReference>${Date.now().toString()}` +
+            `<Quantity>1</Quantity><Items><Path>/*</Path></Items></Paths><CallerReference>${Date.now().toString()}` +
             `</CallerReference></InvalidationBatch></Invalidation>`
         );
 
@@ -376,7 +376,7 @@ describe('/v1/caches', () => {
                       InvalidationBatch: {
                         CallerReference: '0',
                         Paths: {
-                          Items: ['/'],
+                          Items: ['/*'],
                           Quantity: 1,
                         },
                       },
@@ -402,7 +402,7 @@ describe('/v1/caches', () => {
       it('should reply bad gateway when an error occurred while accessing one of the cache servers', () => {
         keycdnFlushMock
           .matchHeader('accept', 'application/json')
-          .matchHeader('authorization', `Basic ${new Buffer('sk_prod_XXX:').toString('base64')}`)
+          .matchHeader('authorization', `Basic ${Buffer.from('sk_prod_XXX:').toString('base64')}`)
           .replyWithError('connection error');
         fasterizeFlushMock
           .matchHeader('accept', 'application/json')
@@ -416,7 +416,7 @@ describe('/v1/caches', () => {
           200,
           `<?xml version="1.0"?>\n<Invalidation xmlns="http://cloudfront.amazonaws.com/doc/2018-11-05/"><Id>abcd</Id>` +
             `<Status>InProgress</Status><CreateTime>2019-07-24T08:47:53.726Z</CreateTime><InvalidationBatch><Paths>` +
-            `<Quantity>1</Quantity><Items><Path>/</Path></Items></Paths><CallerReference>${Date.now().toString()}` +
+            `<Quantity>1</Quantity><Items><Path>/*</Path></Items></Paths><CallerReference>${Date.now().toString()}` +
             `</CallerReference></InvalidationBatch></Invalidation>`
         );
 
@@ -463,7 +463,7 @@ describe('/v1/caches', () => {
                       InvalidationBatch: {
                         CallerReference: '0',
                         Paths: {
-                          Items: ['/'],
+                          Items: ['/*'],
                           Quantity: 1,
                         },
                       },
@@ -494,7 +494,7 @@ describe('/v1/caches', () => {
 
         keycdnFlushMock
           .matchHeader('accept', 'application/json')
-          .matchHeader('authorization', `Basic ${new Buffer('sk_prod_XXX:').toString('base64')}`)
+          .matchHeader('authorization', `Basic ${Buffer.from('sk_prod_XXX:').toString('base64')}`)
           .reply(401, keycdnError);
         fasterizeFlushMock
           .matchHeader('accept', 'application/json')
@@ -578,7 +578,7 @@ describe('/v1/caches', () => {
             urls: ['https://test-domain.com/image1.png', 'https://test-domain.com/image2.png'],
           })
           .matchHeader('content-type', 'application/json')
-          .matchHeader('authorization', `Basic ${new Buffer('sk_prod_XXX:').toString('base64')}`)
+          .matchHeader('authorization', `Basic ${Buffer.from('sk_prod_XXX:').toString('base64')}`)
           .reply(200, {
             status: 'success',
             description: 'Cache has been cleared for URL(s).',
@@ -609,15 +609,15 @@ describe('/v1/caches', () => {
           .post(
             '/2019-03-26/distribution/abcd/invalidation',
             '<InvalidationBatch xmlns="http://cloudfront.amazonaws.com/doc/2019-03-26/"><Paths><Quantity>1</Quantity>' +
-              '<Items><Path>https://test-domain.com/image1.png</Path><Path>https://test-domain.com/image2.png</Path>' +
+              '<Items><Path>/image1.png</Path><Path>/image2.png</Path>' +
               '</Items></Paths><CallerReference>0</CallerReference></InvalidationBatch>'
           )
           .reply(
             200,
             `<?xml version="1.0"?>\n<Invalidation xmlns="http://cloudfront.amazonaws.com/doc/2018-11-05/"><Id>abcd` +
               `</Id><Status>InProgress</Status><CreateTime>2019-07-24T08:47:53.726Z</CreateTime><InvalidationBatch>` +
-              `<Paths><Quantity>2</Quantity><Items><Path>https://test-domain.com/image1.png</Path>` +
-              `<Path>https://test-domain.com/image2.png</Path></Items></Paths><CallerReference>` +
+              `<Paths><Quantity>2</Quantity><Items><Path>/image1.png</Path>` +
+              `<Path>/image2.png</Path></Items></Paths><CallerReference>` +
               `${Date.now().toString()}</CallerReference></InvalidationBatch></Invalidation>`
           );
 
@@ -674,7 +674,7 @@ describe('/v1/caches', () => {
                       InvalidationBatch: {
                         CallerReference: '0',
                         Paths: {
-                          Items: ['https://test-domain.com/image1.png', 'https://test-domain.com/image2.png'],
+                          Items: ['/image1.png', '/image2.png'],
                           Quantity: 2,
                         },
                       },
@@ -776,7 +776,7 @@ describe('/v1/caches', () => {
             urls: ['https://test-domain.com/image1.png', 'https://test-domain.com/image2.png'],
           })
           .matchHeader('content-type', 'application/json')
-          .matchHeader('authorization', `Basic ${new Buffer('sk_prod_XXX:').toString('base64')}`)
+          .matchHeader('authorization', `Basic ${Buffer.from('sk_prod_XXX:').toString('base64')}`)
           .reply(401, keycdnError);
         fasterizeAPIMock
           .delete('/v1/configs/42/cache', {
@@ -798,15 +798,15 @@ describe('/v1/caches', () => {
           .post(
             '/2019-03-26/distribution/abcd/invalidation',
             '<InvalidationBatch xmlns="http://cloudfront.amazonaws.com/doc/2019-03-26/"><Paths><Quantity>1</Quantity>' +
-              '<Items><Path>https://test-domain.com/image1.png</Path><Path>https://test-domain.com/image2.png</Path>' +
+              '<Items><Path>/image1.png</Path><Path>/image2.png</Path>' +
               '</Items></Paths><CallerReference>0</CallerReference></InvalidationBatch>'
           )
           .reply(
             200,
             `<?xml version="1.0"?>\n<Invalidation xmlns="http://cloudfront.amazonaws.com/doc/2018-11-05/"><Id>abcd` +
               `</Id><Status>InProgress</Status><CreateTime>2019-07-24T08:47:53.726Z</CreateTime><InvalidationBatch>` +
-              `<Paths><Quantity>2</Quantity><Items><Path>https://test-domain.com/image1.png</Path>` +
-              `<Path>https://test-domain.com/image2.png</Path></Items></Paths><CallerReference>` +
+              `<Paths><Quantity>2</Quantity><Items><Path>/image1.png</Path>` +
+              `<Path>/image2.png</Path></Items></Paths><CallerReference>` +
               `${Date.now().toString()}</CallerReference></InvalidationBatch></Invalidation>`
           );
 
@@ -862,7 +862,7 @@ describe('/v1/caches', () => {
                       InvalidationBatch: {
                         CallerReference: '0',
                         Paths: {
-                          Items: ['https://test-domain.com/image1.png', 'https://test-domain.com/image2.png'],
+                          Items: ['/image1.png', '/image2.png'],
                           Quantity: 2,
                         },
                       },
@@ -897,7 +897,7 @@ describe('/v1/caches', () => {
             urls: ['https://test-domain.com/image1.png', 'https://test-domain.com/image2.png'],
           })
           .matchHeader('content-type', 'application/json')
-          .matchHeader('authorization', `Basic ${new Buffer('sk_prod_XXX:').toString('base64')}`)
+          .matchHeader('authorization', `Basic ${Buffer.from('sk_prod_XXX:').toString('base64')}`)
           .reply(500, keycdnError);
         fasterizeAPIMock
           .delete('/v1/configs/42/cache', {
@@ -919,15 +919,15 @@ describe('/v1/caches', () => {
           .post(
             '/2019-03-26/distribution/abcd/invalidation',
             '<InvalidationBatch xmlns="http://cloudfront.amazonaws.com/doc/2019-03-26/"><Paths><Quantity>1</Quantity>' +
-              '<Items><Path>https://test-domain.com/image1.png</Path><Path>https://test-domain.com/image2.png</Path>' +
+              '<Items><Path>/image1.png</Path><Path>/image2.png</Path>' +
               '</Items></Paths><CallerReference>0</CallerReference></InvalidationBatch>'
           )
           .reply(
             200,
             `<?xml version="1.0"?>\n<Invalidation xmlns="http://cloudfront.amazonaws.com/doc/2018-11-05/"><Id>abcd` +
               `</Id><Status>InProgress</Status><CreateTime>2019-07-24T08:47:53.726Z</CreateTime><InvalidationBatch>` +
-              `<Paths><Quantity>2</Quantity><Items><Path>https://test-domain.com/image1.png</Path>` +
-              `<Path>https://test-domain.com/image2.png</Path></Items></Paths><CallerReference>` +
+              `<Paths><Quantity>2</Quantity><Items><Path>/image1.png</Path>` +
+              `<Path>/image2.png</Path></Items></Paths><CallerReference>` +
               `${Date.now().toString()}</CallerReference></InvalidationBatch></Invalidation>`
           );
 
@@ -983,7 +983,7 @@ describe('/v1/caches', () => {
                       InvalidationBatch: {
                         CallerReference: '0',
                         Paths: {
-                          Items: ['https://test-domain.com/image1.png', 'https://test-domain.com/image2.png'],
+                          Items: ['/image1.png', '/image2.png'],
                           Quantity: 2,
                         },
                       },
@@ -1012,7 +1012,7 @@ describe('/v1/caches', () => {
             urls: ['https://test-domain.com/image1.png', 'https://test-domain.com/image2.png'],
           })
           .matchHeader('content-type', 'application/json')
-          .matchHeader('authorization', `Basic ${new Buffer('sk_prod_XXX:').toString('base64')}`)
+          .matchHeader('authorization', `Basic ${Buffer.from('sk_prod_XXX:').toString('base64')}`)
           .replyWithError('connection error');
         fasterizeAPIMock
           .delete('/v1/configs/42/cache', {
@@ -1034,15 +1034,15 @@ describe('/v1/caches', () => {
           .post(
             '/2019-03-26/distribution/abcd/invalidation',
             '<InvalidationBatch xmlns="http://cloudfront.amazonaws.com/doc/2019-03-26/"><Paths><Quantity>1</Quantity>' +
-              '<Items><Path>https://test-domain.com/image1.png</Path><Path>https://test-domain.com/image2.png</Path>' +
+              '<Items><Path>/image1.png</Path><Path>/image2.png</Path>' +
               '</Items></Paths><CallerReference>0</CallerReference></InvalidationBatch>'
           )
           .reply(
             200,
             `<?xml version="1.0"?>\n<Invalidation xmlns="http://cloudfront.amazonaws.com/doc/2018-11-05/"><Id>abcd` +
               `</Id><Status>InProgress</Status><CreateTime>2019-07-24T08:47:53.726Z</CreateTime><InvalidationBatch>` +
-              `<Paths><Quantity>2</Quantity><Items><Path>https://test-domain.com/image1.png</Path>` +
-              `<Path>https://test-domain.com/image2.png</Path></Items></Paths><CallerReference>` +
+              `<Paths><Quantity>2</Quantity><Items><Path>/image1.png</Path>` +
+              `<Path>/image2.png</Path></Items></Paths><CallerReference>` +
               `${Date.now().toString()}</CallerReference></InvalidationBatch></Invalidation>`
           );
 
@@ -1096,7 +1096,7 @@ describe('/v1/caches', () => {
                       InvalidationBatch: {
                         CallerReference: '0',
                         Paths: {
-                          Items: ['https://test-domain.com/image1.png', 'https://test-domain.com/image2.png'],
+                          Items: ['/image1.png', '/image2.png'],
                           Quantity: 2,
                         },
                       },
@@ -1130,7 +1130,7 @@ describe('/v1/caches', () => {
             urls: ['https://test-domain.com/image1.png', 'https://test-domain.com/image2.png'],
           })
           .matchHeader('content-type', 'application/json')
-          .matchHeader('authorization', `Basic ${new Buffer('sk_prod_XXX:').toString('base64')}`)
+          .matchHeader('authorization', `Basic ${Buffer.from('sk_prod_XXX:').toString('base64')}`)
           .reply(401, keycdnError);
         fasterizeAPIMock
           .delete('/v1/configs/42/cache', {
@@ -1152,7 +1152,7 @@ describe('/v1/caches', () => {
           .post(
             '/2019-03-26/distribution/abcd/invalidation',
             '<InvalidationBatch xmlns="http://cloudfront.amazonaws.com/doc/2019-03-26/"><Paths><Quantity>1</Quantity>' +
-              '<Items><Path>https://test-domain.com/image1.png</Path><Path>https://test-domain.com/image2.png</Path>' +
+              '<Items><Path>/image1.png</Path><Path>/image2.png</Path>' +
               '</Items></Paths><CallerReference>0</CallerReference></InvalidationBatch>'
           )
           .times(4)
