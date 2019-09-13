@@ -77,7 +77,7 @@ export default function(server: Hapi.Server) {
     method: 'GET',
     path: '/heartbeat',
     handler: (_: Hapi.Request, handler: Hapi.ResponseToolkit) => {
-      handler.response('I am alive!').code(200);
+      return handler.response('I am alive!').code(200);
     },
     options: { description: 'Endpoint to check service availability' },
   });
