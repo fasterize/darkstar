@@ -1,18 +1,17 @@
 import * as Lab from '@hapi/lab';
-export const lab = Lab.script();
-const { describe, it, beforeEach, afterEach } = lab;
-
-import * as request from 'supertest';
 import * as nock from 'nock';
 import * as sinon from 'sinon';
-
+import * as request from 'supertest';
 import { server } from '../../src/darkstar';
+export const lab = Lab.script();
+const { describe, it, beforeEach, afterEach } = lab;
 
 describe('/v1/caches', () => {
   let keycdnAPIMock: nock.Scope;
   let fasterizeAPIMock: nock.Scope;
   let fastlyAPIMock: nock.Scope;
   let cloudfrontAPIMock: nock.Scope;
+  let incapsulaAPIMock: nock.Scope;
   const sandbox = sinon.createSandbox();
 
   beforeEach(() => {
@@ -24,6 +23,7 @@ describe('/v1/caches', () => {
     cloudfrontAPIMock = nock('https://cloudfront.amazonaws.com')
       .replyContentLength()
       .defaultReplyHeaders({ 'Content-Type': 'text/xml' });
+    incapsulaAPIMock = nock('https://my.incapsula.com');
     sandbox.stub(Date, 'now').returns(0);
   });
 
@@ -38,6 +38,7 @@ describe('/v1/caches', () => {
       let fasterizeFlushMock: nock.Interceptor;
       let fastlyFlushMock: nock.Interceptor;
       let cloudfrontFlushMock: nock.Interceptor;
+      let incapsulaFlushMock: nock.Interceptor;
 
       beforeEach(() => {
         flushRequest = request(server.listener)
@@ -51,9 +52,12 @@ describe('/v1/caches', () => {
           '<InvalidationBatch xmlns="http://cloudfront.amazonaws.com/doc/2019-03-26/"><Paths><Quantity>1</Quantity>' +
             '<Items><Path>/*</Path></Items></Paths><CallerReference>0</CallerReference></InvalidationBatch>'
         );
+        incapsulaFlushMock = incapsulaAPIMock.post(
+          '/api/prov/v1/sites/cache/purge?api_id=1234&api_key=4321&site_id=abcd'
+        );
       });
 
-      it('should flush a complete zone of KeyCDN and Fasterize', () => {
+      it('should flush a complete zone of KeyCDN, Fasterize, Fastly, CloudFront and Incapsula ', () => {
         keycdnFlushMock
           .matchHeader('accept', 'application/json')
           .matchHeader('authorization', `Basic ${Buffer.from('sk_prod_XXX:').toString('base64')}`)
@@ -76,6 +80,9 @@ describe('/v1/caches', () => {
             `<Quantity>1</Quantity><Items><Path>/*</Path></Items></Paths><CallerReference>${Date.now().toString()}` +
             `</CallerReference></InvalidationBatch></Invalidation>`
         );
+        incapsulaFlushMock
+          .matchHeader('accept', 'application/json')
+          .reply(200, { res: 0, res_message: 'OK', debug_info: { 'id-info': '13007' } });
 
         return new Promise((resolve, reject) => {
           flushRequest
@@ -92,6 +99,11 @@ describe('/v1/caches', () => {
               cloudfront: {
                 awsAccessKeyID: 'access key ID',
                 awsSecretAccessKey: 'secret access key',
+                zoneID: 'abcd',
+              },
+              incapsula: {
+                incapsulaApiID: '1234',
+                incapsulaApiKey: '4321',
                 zoneID: 'abcd',
               },
             })
@@ -131,6 +143,10 @@ describe('/v1/caches', () => {
                     },
                   },
                 },
+                incapsula: {
+                  remoteStatusCode: 200,
+                  remoteResponse: { res: 0, res_message: 'OK', debug_info: { 'id-info': '13007' } },
+                },
               },
             })
             .end((error: any, _: request.Response) => {
@@ -141,6 +157,7 @@ describe('/v1/caches', () => {
               fasterizeAPIMock.done();
               fastlyAPIMock.done();
               cloudfrontAPIMock.done();
+              incapsulaAPIMock.done();
               resolve();
             });
         });
@@ -186,6 +203,7 @@ describe('/v1/caches', () => {
         fasterizeFlushMock.times(0);
         fastlyFlushMock.times(0);
         cloudfrontFlushMock.times(0);
+        incapsulaFlushMock.times(0);
 
         return new Promise((resolve, reject) => {
           flushRequest
@@ -204,6 +222,7 @@ describe('/v1/caches', () => {
               fasterizeAPIMock.done();
               fastlyAPIMock.done();
               cloudfrontAPIMock.done();
+              incapsulaAPIMock.done();
               resolve();
             });
         });
@@ -235,6 +254,9 @@ describe('/v1/caches', () => {
             `<Quantity>1</Quantity><Items><Path>/*</Path></Items></Paths><CallerReference>${Date.now().toString()}` +
             `</CallerReference></InvalidationBatch></Invalidation>`
         );
+        incapsulaFlushMock
+          .matchHeader('accept', 'application/json')
+          .reply(200, { res: 0, res_message: 'OK', debug_info: { 'id-info': '13007' } });
 
         return new Promise((resolve, reject) => {
           flushRequest
@@ -251,6 +273,11 @@ describe('/v1/caches', () => {
               cloudfront: {
                 awsAccessKeyID: 'access key ID',
                 awsSecretAccessKey: 'secret access key',
+                zoneID: 'abcd',
+              },
+              incapsula: {
+                incapsulaApiID: '1234',
+                incapsulaApiKey: '4321',
                 zoneID: 'abcd',
               },
             })
@@ -289,6 +316,10 @@ describe('/v1/caches', () => {
                     },
                   },
                 },
+                incapsula: {
+                  remoteStatusCode: 200,
+                  remoteResponse: { res: 0, res_message: 'OK', debug_info: { 'id-info': '13007' } },
+                },
               },
             })
             .end((error: any, _: request.Response) => {
@@ -299,6 +330,7 @@ describe('/v1/caches', () => {
               fasterizeAPIMock.done();
               fastlyAPIMock.done();
               cloudfrontAPIMock.done();
+              incapsulaAPIMock.done();
               resolve();
             });
         });
@@ -330,6 +362,9 @@ describe('/v1/caches', () => {
             `<Quantity>1</Quantity><Items><Path>/*</Path></Items></Paths><CallerReference>${Date.now().toString()}` +
             `</CallerReference></InvalidationBatch></Invalidation>`
         );
+        incapsulaFlushMock
+          .matchHeader('accept', 'application/json')
+          .reply(200, { res: 0, res_message: 'OK', debug_info: { 'id-info': '13007' } });
 
         return new Promise((resolve, reject) => {
           flushRequest
@@ -346,6 +381,11 @@ describe('/v1/caches', () => {
               cloudfront: {
                 awsAccessKeyID: 'access key ID',
                 awsSecretAccessKey: 'secret access key',
+                zoneID: 'abcd',
+              },
+              incapsula: {
+                incapsulaApiID: '1234',
+                incapsulaApiKey: '4321',
                 zoneID: 'abcd',
               },
             })
@@ -384,6 +424,10 @@ describe('/v1/caches', () => {
                     },
                   },
                 },
+                incapsula: {
+                  remoteStatusCode: 200,
+                  remoteResponse: { res: 0, res_message: 'OK', debug_info: { 'id-info': '13007' } },
+                },
               },
             })
             .end((error: any, _: request.Response) => {
@@ -394,6 +438,7 @@ describe('/v1/caches', () => {
               fasterizeAPIMock.done();
               fastlyAPIMock.done();
               cloudfrontAPIMock.done();
+              incapsulaAPIMock.done();
               resolve();
             });
         });
@@ -419,6 +464,9 @@ describe('/v1/caches', () => {
             `<Quantity>1</Quantity><Items><Path>/*</Path></Items></Paths><CallerReference>${Date.now().toString()}` +
             `</CallerReference></InvalidationBatch></Invalidation>`
         );
+        incapsulaFlushMock
+          .matchHeader('accept', 'application/json')
+          .reply(200, { res: 0, res_message: 'OK', debug_info: { 'id-info': '13007' } });
 
         return new Promise((resolve, reject) => {
           flushRequest
@@ -435,6 +483,11 @@ describe('/v1/caches', () => {
               cloudfront: {
                 awsAccessKeyID: 'access key ID',
                 awsSecretAccessKey: 'secret access key',
+                zoneID: 'abcd',
+              },
+              incapsula: {
+                incapsulaApiID: '1234',
+                incapsulaApiKey: '4321',
                 zoneID: 'abcd',
               },
             })
@@ -471,6 +524,10 @@ describe('/v1/caches', () => {
                     },
                   },
                 },
+                incapsula: {
+                  remoteStatusCode: 200,
+                  remoteResponse: { res: 0, res_message: 'OK', debug_info: { 'id-info': '13007' } },
+                },
               },
             })
             .end((error: any, _: request.Response) => {
@@ -481,6 +538,7 @@ describe('/v1/caches', () => {
               fasterizeAPIMock.done();
               fastlyAPIMock.done();
               cloudfrontAPIMock.done();
+              incapsulaAPIMock.done();
               resolve();
             });
         });
@@ -505,6 +563,7 @@ describe('/v1/caches', () => {
           .matchHeader('Fastly-Key', 'U2FsdGVkX18D8TD+GD3REqc8cdjRikR6socyNOVSrN0=')
           .replyWithError('connection error');
         cloudfrontFlushMock.times(4).replyWithError('connection error');
+        incapsulaFlushMock.matchHeader('accept', 'application/json').replyWithError('connection error');
 
         return new Promise((resolve, reject) => {
           flushRequest
@@ -521,6 +580,11 @@ describe('/v1/caches', () => {
               cloudfront: {
                 awsAccessKeyID: 'access key ID',
                 awsSecretAccessKey: 'secret access key',
+                zoneID: 'abcd',
+              },
+              incapsula: {
+                incapsulaApiID: '1234',
+                incapsulaApiKey: '4321',
                 zoneID: 'abcd',
               },
             })
@@ -543,6 +607,9 @@ describe('/v1/caches', () => {
                 cloudfront: {
                   message: 'An error occurred while accessing cloudfront API: connection error',
                 },
+                incapsula: {
+                  message: 'An error occurred while accessing incapsula API: connection error',
+                },
               },
             })
             .end((error: any, _: request.Response) => {
@@ -553,6 +620,7 @@ describe('/v1/caches', () => {
               fasterizeAPIMock.done();
               fastlyAPIMock.done();
               cloudfrontAPIMock.done();
+              incapsulaAPIMock.done();
               resolve();
             });
         });
@@ -620,6 +688,15 @@ describe('/v1/caches', () => {
               `<Path>/image2.png</Path></Items></Paths><CallerReference>` +
               `${Date.now().toString()}</CallerReference></InvalidationBatch></Invalidation>`
           );
+        incapsulaAPIMock
+          .post(`/api/prov/v1/sites/cache/purge?api_id=1234&api_key=4321&site_id=abcd&resource_pattern=%2Fimage1.png`)
+          .matchHeader('accept', 'application/json')
+          .reply(200, { res: 0, res_message: 'OK', debug_info: { 'id-info': '13007' } })
+          .post(
+            `/api/prov/v1/sites/cache/purge?api_id=1234&api_key=4321&site_id=abcd&resource_pattern=%2Fimage2.png%3Ffzr-v%3D123`
+          )
+          .matchHeader('accept', 'application/json')
+          .reply(200, { res: 0, res_message: 'OK', debug_info: { 'id-info': '13007' } });
 
         return new Promise((resolve, reject) => {
           flushRequest
@@ -644,6 +721,12 @@ describe('/v1/caches', () => {
                 awsSecretAccessKey: 'secret access key',
                 zoneID: 'abcd',
                 urls: ['https://test-domain.com/image1.png', 'https://test-domain.com/image2.png'],
+              },
+              incapsula: {
+                incapsulaApiID: '1234',
+                incapsulaApiKey: '4321',
+                zoneID: 'abcd',
+                urls: ['https://test-domain.com/image1.png', 'https://test-domain.com/image2.png?fzr-v=123'],
               },
             })
             .expect('content-type', /application\/json/)
@@ -682,6 +765,10 @@ describe('/v1/caches', () => {
                     },
                   },
                 },
+                incapsula: {
+                  remoteStatusCode: 200,
+                  remoteResponse: { res: 0, res_message: 'OK', debug_info: { 'id-info': '13007' } },
+                },
               },
             })
             .end((error: any, _: request.Response) => {
@@ -692,6 +779,7 @@ describe('/v1/caches', () => {
               fasterizeAPIMock.done();
               flushMock.done();
               cloudfrontAPIMock.done();
+              incapsulaAPIMock.done();
               resolve();
             });
         });

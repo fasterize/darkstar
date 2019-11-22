@@ -1,9 +1,10 @@
 import * as Hapi from 'hapi';
 import CacheController from './controllers/CacheController';
+import CloudfrontController from './controllers/CloudfrontController';
 import FasterizeCacheController from './controllers/FasterizeCacheController';
 import FastlyController from './controllers/FastlyController';
+import IncapsulaController from './controllers/IncapsulaController';
 import KeyCDNController from './controllers/KeyCDNController';
-import CloudfrontController from './controllers/CloudfrontController';
 import MultiCacheController from './controllers/MultiCacheController';
 
 export default function(server: Hapi.Server) {
@@ -60,6 +61,19 @@ export default function(server: Hapi.Server) {
     options: cloudfrontController.flushURLsConfig,
   });
   cacheControllers.push(cloudfrontController);
+
+  const incapsulaController = new IncapsulaController();
+  server.route({
+    method: 'DELETE',
+    path: '/v1/caches/incapsula/zones/{zone_id}',
+    options: incapsulaController.flushZoneConfig,
+  });
+  server.route({
+    method: 'DELETE',
+    path: '/v1/caches/incapsula/zones/{zone_id}/urls',
+    options: incapsulaController.flushURLsConfig,
+  });
+  cacheControllers.push(incapsulaController);
 
   const multiCacheController = new MultiCacheController();
   server.route({

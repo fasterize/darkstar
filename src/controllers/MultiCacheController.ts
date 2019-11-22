@@ -1,15 +1,16 @@
+import * as bluebird from 'bluebird';
+import * as Boom from 'boom';
 import * as Hapi from 'hapi';
 import * as Joi from 'joi';
-import * as Boom from 'boom';
-import * as bluebird from 'bluebird';
-import { cleanupError, buildErrorResponse } from '../lib/ResponseBuilder';
-import CacheController from './CacheController';
-import * as keycdn from '../lib/keycdn';
+import * as cloudfront from '../lib/cloudfront';
 import * as fasterize from '../lib/fasterize';
 import * as fastly from '../lib/fastly';
-import * as cloudfront from '../lib/cloudfront';
 import IMap from '../lib/IMap';
+import * as incapsula from '../lib/incapsula';
+import * as keycdn from '../lib/keycdn';
+import { buildErrorResponse, cleanupError } from '../lib/ResponseBuilder';
 import { ServiceResponse } from '../lib/service';
+import CacheController from './CacheController';
 
 export default class MultiCacheController {
   public getFlushZoneConfig(cacheControllers: CacheController[]): Hapi.RouteOptions {
@@ -79,6 +80,16 @@ export default class MultiCacheController {
           (request.payload as IMap<IMap<string>>)['cloudfront']['zoneID'],
           (request.payload as IMap<IMap<string>>)['cloudfront']['awsAccessKeyID'],
           (request.payload as IMap<IMap<string>>)['cloudfront']['awsSecretAccessKey']
+        )
+        .reflect();
+    }
+
+    if ((request.payload as IMap<IMap<string>>)['incapsula']) {
+      actions['incapsula'] = incapsula
+        .flushSite(
+          (request.payload as IMap<IMap<string>>)['incapsula']['zoneID'],
+          (request.payload as IMap<IMap<string>>)['incapsula']['incapsulaApiID'],
+          (request.payload as IMap<IMap<string>>)['incapsula']['incapsulaApiKey']
         )
         .reflect();
     }
@@ -168,6 +179,24 @@ export default class MultiCacheController {
           (request.payload as IMap<IMap<string>>)['cloudfront']['awsAccessKeyID'],
           (request.payload as IMap<IMap<string>>)['cloudfront']['awsSecretAccessKey']
         )
+        .reflect();
+    }
+
+    if ((request.payload as IMap<IMap<string>>)['incapsula']) {
+      actions['incapsula'] = bluebird
+        .all(
+          (request.payload as IMap<IMap<string[]>>)['incapsula']['urls'].map((url: string) => {
+            return incapsula.flushURL(
+              (request.payload as IMap<IMap<string>>)['incapsula']['zoneID'],
+              url,
+              (request.payload as IMap<IMap<string>>)['incapsula']['incapsulaApiID'],
+              (request.payload as IMap<IMap<string>>)['incapsula']['incapsulaApiKey']
+            );
+          })
+        )
+        .then((responses: any[]) => {
+          return responses[0];
+        })
         .reflect();
     }
 

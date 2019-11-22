@@ -171,7 +171,7 @@ describe('/v1/caches/fasterize', () => {
     });
   });
 
-  describe('/zone/${zone_id}/urls', () => {
+  describe('/zones/${zone_id}/urls', () => {
     describe('DELETE', () => {
       let flushRequest: request.Test;
 
