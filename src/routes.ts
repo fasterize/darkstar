@@ -45,6 +45,11 @@ export default function(server: Hapi.Server) {
     path: '/v1/caches/cloudfront/zones/{zone_id}/urls',
     options: cloudfrontController.flushURLsConfig,
   });
+  server.route({
+    method: 'DELETE',
+    path: '/v1/caches/cloudfront/zones/{zone_id}/directories',
+    options: cloudfrontController.flushDirectoriesConfig,
+  });
   cacheControllers.push(cloudfrontController);
 
   const incapsulaController = new IncapsulaController();
@@ -58,8 +63,12 @@ export default function(server: Hapi.Server) {
     path: '/v1/caches/incapsula/zones/{zone_id}/urls',
     options: incapsulaController.flushURLsConfig,
   });
+  server.route({
+    method: 'DELETE',
+    path: '/v1/caches/incapsula/zones/{zone_id}/directories',
+    options: incapsulaController.flushDirectoriesConfig,
+  });
   cacheControllers.push(incapsulaController);
-
 
   server.route({
     method: 'GET',

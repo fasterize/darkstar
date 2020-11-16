@@ -76,6 +76,45 @@ export default class CloudfrontController implements CacheController {
     }
   }
 
+  public get flushDirectoriesConfig(): Hapi.RouteOptions {
+    return {
+      handler: this.flushDirectories.bind(this),
+      tags: ['api', 'cache', 'cloudfront'],
+      description: 'Flush Cloudfront cache URL',
+      validate: {
+        params: this.paramsSchema,
+        payload: this.payloadSchema.keys({
+          directories: Joi.array()
+            .items(
+              Joi.string().uri({
+                scheme: ['http', 'https'],
+              })
+            )
+            .min(1)
+            .required(),
+        }),
+        failAction: (_: Hapi.Request, __: Hapi.ResponseToolkit, error: Boom): Hapi.ResponseObject => {
+          throw cleanupError(error);
+        },
+      },
+      plugins: { 'hapi-swagger': { responses: this.responsesSchema } },
+    };
+  }
+
+  public async flushDirectories(request: Hapi.Request, _: Hapi.ResponseToolkit) {
+    try {
+      const response: ServiceResponse = await cloudfront.flushDirectories(
+        request.params['zone_id'],
+        (request.payload as IMap<string[]>)['directories'],
+        (request.payload as IMap<string>)['awsAccessKeyID'],
+        (request.payload as IMap<string>)['awsSecretAccessKey']
+      );
+      return { remoteStatusCode: 200, remoteResponse: response.body };
+    } catch (error) {
+      throw buildErrorResponse(error, 'cloudfront');
+    }
+  }
+
   public get key() {
     return 'cloudfront';
   }

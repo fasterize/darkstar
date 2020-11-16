@@ -12,6 +12,20 @@ export async function flushDistribution(
   return flushURLs(distributionID, [WILDCARD_FLUSH], awsAccessKeyID, awsSecretAccessKey);
 }
 
+export async function flushDirectories(
+  distributionID: string,
+  directories: string[],
+  awsAccessKeyID: string,
+  awsSecretAccessKey: string
+): bluebird<ServiceResponse> {
+  return flushURLs(
+    distributionID,
+    directories.map(directory => (directory.endsWith('/') ? `${directory}*` : `${directory}/*`)),
+    awsAccessKeyID,
+    awsSecretAccessKey
+  );
+}
+
 export async function flushURLs(
   distributionID: string,
   urls: string[],
@@ -30,7 +44,7 @@ export async function flushURLs(
 
   try {
     const request = new AWS.CloudFront({
-      apiVersion: '2019-03-26',
+      apiVersion: '2020-05-31',
       region: 'eu-west-3',
       credentials: {
         accessKeyId: awsAccessKeyID,

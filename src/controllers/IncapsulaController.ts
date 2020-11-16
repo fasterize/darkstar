@@ -80,6 +80,49 @@ export default class IncapsulaController implements CacheController {
     }
   }
 
+  public get flushDirectoriesConfig(): Hapi.RouteOptions {
+    return {
+      handler: this.flushDirectories.bind(this),
+      tags: ['api', 'cache', 'incapsula'],
+      description: 'Flush Incapsula cache by directory',
+      validate: {
+        params: this.paramsSchema,
+        payload: this.payloadSchema.keys({
+          directories: Joi.array()
+            .items(
+              Joi.string().uri({
+                scheme: ['http', 'https'],
+              })
+            )
+            .min(1)
+            .required(),
+        }),
+        failAction: (_: Hapi.Request, __: Hapi.ResponseToolkit, error: Boom): Hapi.ResponseObject => {
+          throw cleanupError(error);
+        },
+      },
+      plugins: { 'hapi-swagger': { responses: this.responsesSchema } },
+    };
+  }
+
+  public async flushDirectories(request: Hapi.Request, _: Hapi.ResponseToolkit) {
+    try {
+      await Promise.all(
+        (request.payload as IMap<string[]>)['directories'].map((directory: string) => {
+          return incapsula.flushDirectory(
+            (request.params as IMap<string>)['zone_id'],
+            directory,
+            (request.payload as IMap<string>)['incapsulaApiID'],
+            (request.payload as IMap<string>)['incapsulaApiKey']
+          );
+        })
+      );
+      return { remoteStatusCode: 200, remoteResponse: { status: 'ok' } };
+    } catch (error) {
+      throw buildErrorResponse(error, 'incapsula');
+    }
+  }
+
   public get responsesSchema(): any {
     return {
       200: {

@@ -1,31 +1,29 @@
 # Darkstar
 
-Darkstar is an API to flush multiple HTTP cache servers, including CDN.
+Darkstar is an API to flush multiple CDN.
 
 ## Usage example
 
-Flush Fasterize cache:
+Flush KeyCDN cache:
+
 ```bash
-curl -v -X DELETE http://localhost:9080/v1/caches/fasterize/zones/${FASTERIZE_CONFIG_ID} \
+curl -v -X DELETE http://localhost:9080/v1/caches/keycdn/zones/${FASTERIZE_CONFIG_ID} \
   -H Content-Type:application/json \
   --data '{"authorizationToken": "${FASTERIZE_API_KEY}"}'
 ```
 
-Flush Fasterize and KeyCDN caches:
-```bash
-curl -v -X DELETE http://localhost:9080/v1/caches/zones \
-  -H Content-Type:application/json \
-  --data '{"fasterize": {"authorizationToken": "${FASTERIZE_API_KEY}", "zoneID": "${FASTERIZE_CONFIG_ID}"}, "keycdn": {"authorizationToken": "${KEYCDN_API_KEY}", "zoneID": "${KEYCDN_ZONE_ID}"}}'
-```
+Current available CDN : KeyCDN, CloudFront, Incapsula and Fastly.
 
 ## Setup
 
 Install tools:
+
 ```bash
 npm install -g typescript gulp-cli typings
 ```
 
 Install dependencies:
+
 ```bash
 typings install
 npm install
@@ -34,6 +32,7 @@ npm install
 ## Run it
 
 Start Darkstar:
+
 ```bash
 gulp start
 ```
@@ -41,11 +40,13 @@ gulp start
 ## Run tests
 
 Run tests:
+
 ```bash
 gulp test
 ```
 
 Continuously run tests:
+
 ```bash
 gulp watch-test
 ```
