@@ -1,27 +1,12 @@
 import * as Hapi from 'hapi';
 import CacheController from './controllers/CacheController';
 import CloudfrontController from './controllers/CloudfrontController';
-import FasterizeCacheController from './controllers/FasterizeCacheController';
 import FastlyController from './controllers/FastlyController';
 import IncapsulaController from './controllers/IncapsulaController';
 import KeyCDNController from './controllers/KeyCDNController';
-import MultiCacheController from './controllers/MultiCacheController';
 
 export default function(server: Hapi.Server) {
   const cacheControllers: CacheController[] = [];
-
-  const fasterizeCacheController = new FasterizeCacheController();
-  server.route({
-    method: 'DELETE',
-    path: '/v1/caches/fasterize/zones/{zone_id}',
-    options: fasterizeCacheController.flushZoneConfig,
-  });
-  server.route({
-    method: 'DELETE',
-    path: '/v1/caches/fasterize/zones/{zone_id}/urls',
-    options: fasterizeCacheController.flushURLsConfig,
-  });
-  cacheControllers.push(fasterizeCacheController);
 
   const keyCDNController = new KeyCDNController();
   server.route({
@@ -75,17 +60,6 @@ export default function(server: Hapi.Server) {
   });
   cacheControllers.push(incapsulaController);
 
-  const multiCacheController = new MultiCacheController();
-  server.route({
-    method: 'DELETE',
-    path: '/v1/caches/zones',
-    options: multiCacheController.getFlushZoneConfig(cacheControllers),
-  });
-  server.route({
-    method: 'DELETE',
-    path: '/v1/caches/urls',
-    options: multiCacheController.getFlushURLsConfig(cacheControllers),
-  });
 
   server.route({
     method: 'GET',
