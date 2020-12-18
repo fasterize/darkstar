@@ -292,6 +292,58 @@ describe('/v1/caches/cloudfront', () => {
         });
       });
 
+      it('should keep search parameters of the URL of the Cloudfront cache', () => {
+        cloudfrontAPIMock
+          .post(
+            '/2020-05-31/distribution/abcd/invalidation',
+            '<InvalidationBatch xmlns="http://cloudfront.amazonaws.com/doc/2020-05-31/"><Paths><Quantity>1</Quantity>' +
+              '<Items><Path>/image.png?v=1</Path></Items></Paths>' +
+              '<CallerReference>0</CallerReference></InvalidationBatch>'
+          )
+          .reply(
+            200,
+            `<?xml version="1.0"?>\n<Invalidation xmlns="http://cloudfront.amazonaws.com/doc/2018-11-05/"><Id>abcd` +
+              `</Id><Status>InProgress</Status><CreateTime>2019-07-24T08:47:53.726Z</CreateTime><InvalidationBatch>` +
+              `<Paths><Quantity>1</Quantity><Items><Path>/image.png?v=1</Path></Items></Paths>` +
+              `<CallerReference>${Date.now().toString()}</CallerReference></InvalidationBatch></Invalidation>`
+          );
+
+        return new Promise((resolve, reject) => {
+          flushRequest
+            .send({
+              awsAccessKeyID: 'access key ID',
+              awsSecretAccessKey: 'secret access key',
+              urls: ['https://test-domain.com/image.png?v=1'],
+            })
+            .expect('content-type', /application\/json/)
+            .expect(200)
+            .expect({
+              remoteStatusCode: 200,
+              remoteResponse: {
+                Invalidation: {
+                  CreateTime: '2019-07-24T08:47:53.726Z',
+                  Id: 'abcd',
+                  InvalidationBatch: {
+                    CallerReference: '0',
+                    Paths: {
+                      Items: ['/image.png?v=1'],
+                      Quantity: 1,
+                    },
+                  },
+                  Status: 'InProgress',
+                },
+              },
+            })
+            .end((error: any, _: request.Response) => {
+              if (error) {
+                reject(error);
+              }
+              cloudfrontAPIMock.done();
+              resolve();
+            });
+        });
+      });
+
       it('should flush more than 1 URL of the Cloudfront cache', () => {
         cloudfrontAPIMock
           .post(

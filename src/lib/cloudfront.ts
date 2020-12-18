@@ -38,7 +38,7 @@ export async function flushURLs(
     uniqPaths = urls;
   } else {
     // it is currently not possible to invalidate by domain and Cloudfront invalidation by path only.
-    const paths = urls.map(url => new URL(url)).map(url => url.pathname);
+    const paths = urls.map(url => new URL(url)).map(url => `${url.pathname}${url.search}`);
     uniqPaths = Array.from(new Set(paths));
   }
 
